@@ -1,0 +1,2 @@
+# qlikview
+Qlikvieqw codebase
