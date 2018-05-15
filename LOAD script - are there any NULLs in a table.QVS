@@ -1,0 +1,105 @@
+/*
+
+Example usage1:
+        call COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE ('t1');
+Example usage2:
+        call COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE ('t1', 'Y'); // NOTE: there is a 2nd optional parameter
+
+        TRACE $(COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.return_value);
+
+What does it do?
+        Scans an in-memory table for any fields which contain NULLs and sets a return value variable with a Y or N to indicate presence of any NULLs 
+
+What parameters does it accept?
+        param_table_name = 
+        optional_param_leave_table_in_memory =
+        
+What does it return?
+        global variable [COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.return_value] will contain either "Y" or "N" based on whether *any* field in the table has any NULL values
+
+What error does it trap?
+        A call to [SUB COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE] has provided an empty or bad table name [$(v_local_param_table_name)]. The script cannot continue.'
+        A call to [SUB COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE] has provided an invalid value for parameter [optional_param_leave_table_in_memory]. It can either be omitted or have a value of [Y] or [N]. The script cannot continue.') ;
+
+*/
+sub COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE (param_table_name , optional_param_leave_table_in_memory /* local variables */ , v_local_param_table_name, v_local_return_value, v_local_WHERE_clause, v_local_field_names, v_local_field_index, v_local_field_count, v_local_ISNULL_clause, v_local_field_name, v_local_delimiter, v_local_NULL_row_count, v_local_optional_param_leave_table_in_memory ) ;
+
+        LET v_local_param_table_name             = param_table_name ;
+        IF ISNULL (v_local_param_table_name) OR $(f_does_table_exist(v_local_param_table_name)) <> 'Y' THEN ;
+
+                 call common.generate_fatal_error ('A call to [SUB COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE] has provided an empty or bad table name [$(v_local_param_table_name)]. The script cannot continue.') ;
+                 exit script;
+        END IF ;
+        
+        LET v_local_optional_param_leave_table_in_memory = UPPER (TRIM (optional_param_leave_table_in_memory)) ;
+        IF not ISNULL (v_local_optional_param_leave_table_in_memory) AND NOT (v_local_optional_param_leave_table_in_memory ='Y' OR v_local_optional_param_leave_table_in_memory ='N') THEN
+        
+                call common.generate_fatal_error ('A call to [SUB COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE] has provided an invalid value for parameter [optional_param_leave_table_in_memory]. It can either be omitted or have a value of [Y] or [N]. The script cannot continue.') ;
+                 exit script;
+        
+        END IF ;
+        
+        
+        LET v_local_delimiter                           = ';' ;
+        LET v_local_return_value                         = 'N'; // default to NO
+        LET v_local_WHERE_clause                         = ' 1=0  ' ;
+        
+        CALL get_table_field_names (v_local_param_table_name, 'N') ; // get field names but dont sort (sort produces some extraneous LOG output)
+        LET v_local_field_names  = get_table_field_names.field_names ; // list is delimited by ';'
+
+        //call output_variable_values ('v_local_field_names') ;
+        
+        LET v_local_field_count = NoOfFields (v_local_param_table_name) ; 
+                
+        FOR v_local_field_index = 1 TO v_local_field_count STEP 1 ;
+                
+                let v_local_field_name = SUBFIELD (v_local_field_names, v_local_delimiter, v_local_field_index) ;
+                LET v_local_ISNULL_clause = 'OR ISNULL ( [$(v_local_field_name)] ) ' ; // [square brackets in case field has spaces in its name 
+                LET v_local_WHERE_clause = v_local_WHERE_clause & v_local_ISNULL_clause ;
+                
+                //call output_variable_values ('v_local_field_index,v_local_field_name,v_local_ISNULL_clause,v_local_WHERE_clause') ;
+                
+        
+        NEXT  v_local_field_index ;
+
+        //call output_variable_values ('v_local_WHERE_clause') ;
+
+        // todo - is there any error checking that can be done before the LOAD resident?
+        
+        CALL describe_table (v_local_param_table_name) ;
+        
+        COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.table_name:
+        NOCONCATENATE
+        LOAD
+                1
+        RESIDENT
+                '$(v_local_param_table_name)'
+        WHERE
+                $(v_local_WHERE_clause)
+        ;
+        
+        LET v_local_NULL_row_count = NoOfRows ('COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.table_name') ;
+        
+        
+        
+        if v_local_NULL_row_count > 0 then 
+        
+                LET v_local_return_value = 'Y' ;
+                
+                if v_local_optional_param_leave_table_in_memory <> 'Y' THEN
+
+                        CALL DROP_TABLE ('COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.table_name') ;
+                
+                END IF ;
+
+        ELSE
+                
+                LET v_local_return_value = 'N' ;
+                
+                CALL DROP_TABLE ('COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.table_name') ;
+                
+        END IF ;
+        
+        let COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.return_value = v_local_return_value ; // this global variable can be used by the calling procedure : COMMON.ARE_THERE_ANY_NULLS_IN_A_TABLE.return_value
+        
+END SUB ; // 

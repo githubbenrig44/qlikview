@@ -1,0 +1,144 @@
+
+/*
+
+List of table names:
+comma delimited
+all trailing and leading spaces are removed from overall list but *retained* within each table name wildcard clause (someone may have named their table including spaces!)
+assumed to not contain any semi-colons
+usual wildcard operators i.e. '*' means zero or more chars, '?' means any single character
+no limit to list length
+does not error out if a table name is given that does not exist (TODO-may revisit this)
+table names in QVW are case sensitive but the QVW function "WILDMATCH" is not and since these SUBs use that function the matching of names does not take case into account. This may or may not be as expected. 
+
+
+RETURNS VARIABLES:
+	parse_wildcard_list_of_table_names.return_list_of_table_names_that_match
+	parse_wildcard_list_of_table_names.return_list_of_table_names_that_do_not_match
+which can directly be used by DROP TABLE or DROP TABLES command to drop a series of tables in a single command
+
+
+OUTSTANDING ITEMS:
+More error checking e.g. empty table name, non-wildcard table name does not match model, issue WARNING if no tables to drop OR no tables remain (depending on which command issued)
+Add code that warns if tables exist in memory that have identical names but different case. 
+
+
+*/
+SUB parse_wildcard_list_of_table_names (param_list_of_table_names_with_wildcards /* local variables */ , local_formatted_list_of_table_names_that_match,  local_formatted_list_of_table_names_that_do_not_match, local_WILDMATCH_Yn, local_wildmatch_position_number, local_LIST_DELIMITER, local_param_list_of_table_names_with_wildcards, local_table_index, local_wildcard_index, local_table_name, local_param_list_of_table_names_with_wildcards_parameter_count);
+
+	// Constants
+	LET local_LIST_DELIMITER = ',' ;
+	
+	LET local_param_list_of_table_names_with_wildcards = param_list_of_table_names_with_wildcards ; // work with local copy to avoid changing source variable if any
+	
+	//CALL OUTPUT_VARIABLE_VALUES ('local_param_list_of_table_names_with_wildcards');
+	
+	// Tidy up and prepare to count/process comma delimited list of table names (which may include wildcards)
+	LET local_param_list_of_table_names_with_wildcards = TRIM (local_param_list_of_table_names_with_wildcards);
+	IF RIGHT (local_param_list_of_table_names_with_wildcards, 1) <> local_LIST_DELIMITER THEN ; LET local_param_list_of_table_names_with_wildcards = local_param_list_of_table_names_with_wildcards & local_LIST_DELIMITER; END IF ;
+	
+	LET local_number_of_tables_in_data_model = NoOfTables () ;
+	
+	
+	
+	// I wanted to use TABLENAME function combined with AUTOGENERATE to generate the table below but it seems QVW V11 (11.20.12913.0409) has a bug in that [ TABLENAME (IterNo()) ] does not work properly inside a AUTOGENERATE
+	LET local_param_list_of_table_names_with_wildcards_parameter_count = SUBSTRINGCOUNT (local_param_list_of_table_names_with_wildcards, local_LIST_DELIMITER);
+	
+	//CALL OUTPUT_VARIABLE_VALUES ('local_param_list_of_table_names_with_wildcards_parameter_count,local_param_list_of_table_names_with_wildcards,local_number_of_tables_in_data_model');
+	
+	//EXIT SCRIPT;
+	LET local_formatted_list_of_table_names_that_match 			= '';
+	LET local_formatted_list_of_table_names_that_do_not_match 	= '' ;
+	
+	FOR local_wildcard_index = 1 to local_param_list_of_table_names_with_wildcards_parameter_count STEP 1 ;
+	
+		LET local_wildcard_clause = trim (SUBFIELD (local_param_list_of_table_names_with_wildcards, local_LIST_DELIMITER, local_wildcard_index ) )  ;
+		
+		//CALL OUTPUT_VARIABLE_VALUES ('local_wildcard_index, local_wildcard_clause') ;
+		
+		for local_table_index =1  to local_number_of_tables_in_data_model ;
+		
+			let local_table_name = TABLENAME ( local_table_index-1) ;
+		
+			LET local_wildmatch_position_number = WILDMATCH ( local_table_name , local_wildcard_clause ) ;
+	
+			IF local_wildmatch_position_number > 0 THEN
+				LET local_wildmatch_yn 	= 'Y' ;
+
+				IF INDEX (local_formatted_list_of_table_names_that_match, '[' & local_table_name & ']') <=0 THEN ; // prevent duplicates in list of table names
+					LET local_formatted_list_of_table_names_that_match 			= local_formatted_list_of_table_names_that_match 			& ' [' & local_table_name & ']' & local_LIST_DELIMITER ;
+				END IF;
+
+			ELSE
+				LET local_wildmatch_yn	= 'n' ;
+//				IF INDEX (local_formatted_list_of_table_names_that_do_not_match, '[' & local_table_name & ']') <=0 THEN ; // prevent duplicates in list of table names
+//					LET local_formatted_list_of_table_names_that_do_not_match 	= local_formatted_list_of_table_names_that_do_not_match 	& ' [' & local_table_name & ']' & local_LIST_DELIMITER ;
+//				END IF ;
+			END IF ;
+			
+			
+			//CALL OUTPUT_VARIABLE_VALUES ('local_table_index,local_table_name,local_wildmatch_position_number,local_wildmatch_yn') ;
+			
+//			list_of_table_names_that_matched:
+//			// IMPLIED CONCATENATION
+//			LOAD * INLINE [
+//			TABLE_NAME, WILDMATCH_POSITION_NUMBER,  WILDMATCH_YN
+//			$(local_table_name), $(local_wildmatch_position_number), $(local_wildmatch_yn)
+//			]
+//			;
+		NEXT local_table_index ;
+	
+	
+	NEXT local_wildcard_index ;
+	
+	// BUILD LIST of tables that do not match wildcards so that calling procedure may use it
+	FOR local_table_index =1  to local_number_of_tables_in_data_model STEP 1 ;
+		
+		let local_table_name = TABLENAME ( local_table_index-1) ;
+		
+		IF INDEX (local_formatted_list_of_table_names_that_match, '[' & local_table_name & ']' ) = 0 then ;
+		
+			LET local_formatted_list_of_table_names_that_do_not_match 	= local_formatted_list_of_table_names_that_do_not_match 	& ' [' & local_table_name & ']' & local_LIST_DELIMITER ;
+
+		END IF ;
+	
+	NEXT local_table_index;
+
+
+	IF RIGHT (local_formatted_list_of_table_names_that_match,1) 		= local_LIST_DELIMITER THEN ; LET local_formatted_list_of_table_names_that_match 			= LEFT (local_formatted_list_of_table_names_that_match, LEN (local_formatted_list_of_table_names_that_match)-1); END IF ;
+	IF RIGHT (local_formatted_list_of_table_names_that_do_not_match,1) 	= local_LIST_DELIMITER THEN ; LET local_formatted_list_of_table_names_that_do_not_match 	= LEFT (local_formatted_list_of_table_names_that_do_not_match, LEN (local_formatted_list_of_table_names_that_do_not_match)-1); END IF ;
+
+	//CALL OUTPUT_VARIABLE_VALUES ('local_formatted_list_of_table_names_that_match,local_formatted_list_of_table_names_that_do_not_match');
+	
+	LET parse_wildcard_list_of_table_names.return_list_of_table_names_that_match 			= local_formatted_list_of_table_names_that_match;
+	LET parse_wildcard_list_of_table_names.return_list_of_table_names_that_do_not_match 	= local_formatted_list_of_table_names_that_do_not_match;
+
+END SUB ;
+
+
+SUB drop_tables_wildcard	(param_list_of_table_names_with_wildcards)
+
+	CALL SUB_TRACE_EVENT ('SUB DROP_TABLES_WILDCARD () is executing with parameter of : $(param_list_of_table_names_with_wildcards)') ;
+	
+	call parse_wildcard_list_of_table_names (param_list_of_table_names_with_wildcards) ;
+	
+	CALL SUB_TRACE_EVENT ('DROP TABLES command being issued with the following list of named tables (after any wildcards have been matched)');
+	CALL OUTPUT_VARIABLE_VALUES ('parse_wildcard_list_of_table_names.return_list_of_table_names_that_match');
+
+	DROP TABLES $(parse_wildcard_list_of_table_names.return_list_of_table_names_that_match) ;
+
+END SUB ; // drop_all_tables_wildcard
+
+
+SUB drop_tables_except_wildcard	(param_list_of_table_names_with_wildcards)
+
+	CALL SUB_TRACE_EVENT ('SUB DROP_TABLES_EXCEPT_WILDCARD() is executing with parameter of : $(param_list_of_table_names_with_wildcards)');
+	
+	call parse_wildcard_list_of_table_names (param_list_of_table_names_with_wildcards) ;
+	
+	CALL SUB_TRACE_EVENT ('DROP TABLES command being issued with the following list of named tables (after any wildcards have been matched)');
+	CALL OUTPUT_VARIABLE_VALUES ('parse_wildcard_list_of_table_names.return_list_of_table_names_that_do_not_match');
+
+	DROP TABLES $(parse_wildcard_list_of_table_names.return_list_of_table_names_that_do_not_match) ;
+
+END SUB ; // drop_tables_except_wildcard
+

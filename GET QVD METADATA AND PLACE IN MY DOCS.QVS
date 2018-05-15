@@ -1,0 +1,1525 @@
+﻿///$tab Common Routines (COPY AS OF 10 26 2013)
+
+// 
+
+// ========================================================================================================================
+//
+// Save this TAB's text to a file named "QVW ECS Common Functions.TXT" located in relevant INCLUDES folder
+//
+//
+// ========================================================================================================================
+
+// single line functions i.e. $(function_name(parameter1, parameter2, etc)) e.g. IF $(f_does_file_exist(filename)) = 'Y' THEN ; trace Yes it does! ; ELSE ; Trace No it doesnt! ; END IF ;
+// f_does_file_exist (filename)
+// f_does_table_exist (tablename)
+// f_does_field_exist_in_table (fieldname, tablename)
+// f_get_user_my_documents_folder
+
+
+// LOG file management:
+// SUB sub_trace_event (event_description)
+// sub generate_error (param_error_text)
+// sub generate_warning (param_warning_text)
+// sub debug_code_warning (optional_message);
+
+// file management:
+// Sub describe_qvd_file (param_qvd_file, param_optional_get_fields_yn))
+// SUB does_file_exist (param_filename)
+// SUB get_just_the_directory (param_path_and_filename)
+// SUB get_just_the_filename (param_path_and_filename)
+
+// table management:
+// sub drop_table ( param_table_name ) 
+// sub rename_table (param_table_name_before, param_table_name_after)
+// sub describe_all_tables 
+// sub is_field_value_unique_within_table (param_table_name, param_field_name)
+// sub does_table_exist (param_table_name)
+// sub drop_all_tables_except (param_table_name)
+// sub does_field_exist_in_table (param_table_name, param_field_name )
+// sub is_field_name_unique_to_table (param_table_name, param_field_name )
+// sub describe_table (param_table_name, param_fields_output_yn)
+// sub compare_two_tables (param_table_one, param_table_two)
+// sub add_metadata_comment_to_table (param_table_name, param_custom_metadata)
+// sub compare_two_qvds (param_qvd_file_1, param_qvd_file_2)
+// sub get_table_field_names (param_table_name, param_optional_sort_yn)
+// sub get_qvd_field_names (param_qvd_filename, param_optional_sort_yn)
+// sub store_table_in_qvd (param_table_name, param_qvd_file, param_write_metadata_yn, param_describe_yn) 
+
+// support routines
+// sub compare_two_delimited_lists (param_list_1, param_list_2, param_delimiter)
+// sub sort_delimited_list (param_delimited_list, param_delimiter)
+
+
+LET QVW_ECS_Common_Functions.v_error_count 				= 0 ;
+LET QVW_ECS_Common_Functions.v_warning_count 			= 0 ;
+LET QVW_ECS_Common_Functions.v_debug_code_warning 		= 0 ;
+
+
+// ========================================================================================================================
+
+// Single expression custom functions using SET keyword and $1, $2 etc parameters
+// See QVW manual section "Dollar-Sign Expansion with Parameters" for more information on this syntax
+
+// $1 path and file filename
+// will return just the filename.EXT part of a path\filename (used for logging)
+// e.g. let x= $(f_get_just_the_filename('C:\temp\filename.QVD')) will returned 'filename.QVD' in variable 'x'
+//Set f_get_just_the_filename = IF (index( $1, '\', -1 ) =0, '$1', MID ($1, index( $1, '\', -1 )+1 ) ) ;
+Set f_get_just_the_filename = SubField ( $1, '\' , -1)  ; // -1 means 1st field working from end of string backwards (1 would mean working from the start of string). also if no delimiter, whole is returned
+
+Set f_get_just_the_folder = IF (index( $1, '\', -1 ) =0, '', MID ($1, 1, index( $1, '\', -1 )-1 ) ) ;
+
+// $1 filename
+SET f_does_file_exist =IF( IsNull (FileTime( $1 )), 'N', 'Y') ;
+	
+// $1 table name
+set f_does_table_exist =IF ( IsNull ($1), 'N', IF ( IsNull (TableNumber($1)), 'N', 'Y' ) ) ;
+
+// $1=fieldname $2=tablename
+SET f_does_field_exist_in_table =IF (FieldNumber($1,$2) = 0, 'N', 'Y' ) ;
+
+// no parameters - will return Windows My Documents folde for current user e.g. C:\Users\soio\Documents
+SET f_get_user_my_documents_folder =GetRegistryString('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders','Personal')  ; // "Desktop" is another good key
+
+// Remove password from ConnectString. May hide useful info from more complex ConnectString return values e.g. usage [ let x=$(f_get_clean_connect_string) ]
+SET f_get_clean_connect_string = LEFT (ConnectString(), INDEX (ConnectString(), 'PWD')-1 );
+
+// =======================================================================================================================================================
+// Use this function in WHERE NOT/EXISTS (field, expression) syntax in place of the "field" parameter
+// because QVW V10SR2 does not detect invalid field names in that syntax, this functions compensates for that
+//
+// USAGE : [NOT] EXISTS ( $(f_return_valid_field_name(fieldname6)), 'expression' )
+//
+// if the field name passed to this function is not valid, the WHERE NOT/EXISTS (field, expression) clause will generate an error
+// The typical error will be a "General Script Error", "Execution Failed" followed by "Execution finished"
+// NOTE: Do not use this function on a WHERE NOT/EXISTS (field) clause. It is not needed there and will cause more unexpected errors
+// NOTE: The custom function uses QVW standard function "FieldValueCount" to determine if a field name is genuine or not
+
+//set f_return_valid_field_name=IF ( IsNull (FieldValueCount('$1') ), NULL, '$1' ) ;
+//set f_return_valid_field_name=IF ( IsNull (FieldValueCount('$1') ), FieldValueCount($1) /* forced syntax error */ , '$1' ) ;
+//todo - cant get this one to work
+//todo - cant get this one to work
+//todo - cant get this one to work
+//todo - cant get this one to work
+
+// end of function definition
+// --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+set QVW_ECS_COMMON_ROUTINES.LOG_ID=; // by default this variable is NULL
+
+sub set_LOG_ID (param_QVW_ECS_COMMON_ROUTINES.LOG_ID)
+
+	let QVW_ECS_COMMON_ROUTINES.LOG_ID = param_QVW_ECS_COMMON_ROUTINES.LOG_ID ;
+	
+end SUB
+
+
+// ========================================================================================================================
+SUB sub_trace_event (event_description,  optional_param_custom_tag, /* local variables */ local_custom_tag)
+
+	// NOTE: We cannot allow ';' semi colons to be output by TRACE command since it is a statement terminator
+	let event_description=REPLACE (event_description, ';', ',' ); // TRACE command does not tolerate semi-colons very well
+	let event_description=REPLACE (event_description, chr(13), ' ' ) ; // replace CR with spaces to avoid bad line management in LOG
+
+
+//	let local_custom_tag='<LOG> ' ;
+
+	IF Not IsNull (optional_param_custom_tag) THEN // if a supplied tag comes along, then use it
+		let local_custom_tag = optional_param_custom_tag ;
+	ELSE
+		IF Not IsNull (QVW_ECS_COMMON_ROUTINES.LOG_ID)   THEN // or use the default if it has been set
+			let local_custom_tag = QVW_ECS_COMMON_ROUTINES.LOG_ID   ;
+		ELSE
+			let local_custom_tag='LOG' ; // else use a standard tag
+		END IF ;
+	END IF ;
+		
+	let local_custom_tag = '<' & local_custom_tag & '> ' ;
+	
+	trace $(local_custom_tag)$(event_description) ;
+
+end sub ;
+
+// ========================================================================================================================
+sub generate_error (param_error_text)
+	
+	call sub_trace_event('ERROR:') ;
+//	call sub_trace_event('ERROR:' & param_error_text) ;
+	IF NOT IsNull (param_error_text) THEN ; call sub_trace_event ('ERROR: Comments [$(param_error_text)]') ; END IF ;
+	call sub_trace_event('ERROR:') ;
+	
+	// todo - decide how to genrate a fatal error situation SET ERROMODE=2 doesnt work
+	LET QVW_ECS_Common_Functions.v_error_count  = QVW_ECS_Common_Functions.v_error_count  + 1; // keep count
+	
+end sub
+
+// ========================================================================================================================
+sub generate_warning (param_warning_text)
+	
+	call sub_trace_event('WARNING:') ;
+//	call sub_trace_event('WARNING:' & param_warning_text) ;
+	IF NOT IsNull (param_warning_text) THEN ; call sub_trace_event ('WARNING: Comments [$(param_warning_text)]') ; END IF ;
+	call sub_trace_event('WARNING:') ;
+	
+	LET QVW_ECS_Common_Functions.v_warning_count = QVW_ECS_Common_Functions.v_warning_count + 1 ;
+	
+end sub
+
+// ========================================================================================================================
+
+sub debug_code_warning (optional_message);
+
+	call sub_trace_event ('DEBUG CODE: ') ;
+	call sub_trace_event ('DEBUG CODE: This QVW contains code which was labelled as DEBUG CODE. Please review with developer since the QVW logic may not function correctly while this code is active') ;
+	IF NOT IsNull (optional_message) THEN ; call sub_trace_event ('DEBUG CODE: Comments [$(optional_message)]') ; END IF ;
+	call sub_trace_event ('DEBUG CODE: ') ;
+	LET QVW_ECS_Common_Functions.v_debug_code_warning = QVW_ECS_Common_Functions.v_debug_code_warning + 1 ;
+	
+end sub ;
+
+
+
+
+
+
+
+/*
+routines names:
+	sub drop_all_tables_except (param_table_name)
+	sub does_table_exist (param_table_name)
+	sub does_field_exist_in_table (param_table_name, param_field_name )
+	sub is_field_name_unique_to_table (param_table_name, param_field_name )
+	sub is_field_value_unique_within_table (param_table_name, param_field_name)	
+*/
+
+
+// ============================================================================================================
+
+// detects if a table name exists in script at the point of execution and returns the existence in variable named as SUB
+// All parameters and comparisons are case sensitive
+// TECHNICAL NOTE: since functions are not easy in script language, I fake it via a variable named identically to the SUB name
+
+// ALTERNATIVE: See custom function named "f_does_table_exist" for a simpler version of this code
+
+sub does_table_exist (param_table_name)
+
+	let _table_number = tablenumber(param_table_name) ;
+	
+	if IsNull (_table_number) then  
+		let _response = 'N' ;
+	else
+		let _response = 'Y' ;
+	end if
+	
+let _does_table_exist = _response ;
+	
+end sub
+
+// ========================================================================================================================
+// Test whether a field name exists in a specific table
+// All parameters and comparisons are case sensitive
+
+// TECHNICAL NOTE: See custom function named "f_does_field_exist_in_table" for a simpler method of detecting this
+
+sub does_field_exist_in_table (param_table_name, param_field_name )
+
+let _response = 'N' ; // default
+
+	call does_table_exist (param_table_name) ;
+	if _does_table_exist = 'Y' then
+	
+		let _field_number = FieldNumber(param_field_name, param_table_name) ;
+		
+		if _field_number = 0 then  
+			let _response = 'N' ;
+		else
+			let _response = 'Y' ;
+		end if
+	else
+		call generate_error ('Table name [$(param_table_name)] does not exist in script')  ;
+		let _response = 'N' ;
+	end if
+
+let _does_field_exist_in_table = _response ;
+	
+end sub
+
+// ========================================================================================================================
+
+// Tests if field name is unique to a table (and not used on any other table)
+// Useful to determine which method of checking how unique a key is on an incremental load
+// if the key field name is unique then comparing the result of the following functions will indicate uniqueness FieldValueCount(fieldname) and NoOfRows('TableName ')
+// if the key field name is not unique then a slower but more reliable method of determining uniqueness must be used
+// see is_field_value_unique_within_table procedure for usage
+//
+
+sub is_field_name_unique_to_table (param_table_name, param_field_name )
+
+	//trace Procedure [is_field_unique_to_table] has parameters table name [$(param_table_name)] field name [$(param_field_name)] ;
+
+	let _response = 'N' ; // default
+
+	call does_field_exist_in_table (param_table_name, param_field_name ) ;
+	if _does_field_exist_in_table = 'Y' then
+		let _field_existence_counter = 0 ;
+		let _number_of_tables = NoOfTables() ;
+		
+		if _number_of_tables > 1 THEN ; // field could exist on multiple tables
+			
+			for _table_index = 1 to _number_of_tables
+				
+				call does_field_exist_in_table (TableName(_table_index-1), param_field_name ) ;
+				if _does_field_exist_in_table = 'Y' then
+					let _field_existence_counter = _field_existence_counter + 1;
+				else
+					// do nothing 
+				end if
+	
+			next _table_index
+			if _field_existence_counter = 1 then // field exists on only one table and since we checked it was on our target table already, it must be unique
+				let _response = 'Y' ;
+			else
+				let _response = 'N' ;	// cant be unique
+			end if
+	
+		ELSE // if there is only table in the model, and that field exists in the table, that it must be unique to the table (makes sense!)
+			let _response = 'Y' ; 
+		END IF ;		
+	else
+		call generate_error ('Field [$(param_field_name)] does not exist in table [$(param_table_name)]. Cannot determine uniqueness' ) ;
+		let _response = 'N' ;
+	end if
+
+
+let _is_field_name_unique_to_table= _response ;
+
+end sub
+
+// ========================================================================================================================
+
+// Determines if the contents of field name are unique within a specific table
+// NOTE: Does not use or depend on 'associative' logic i.e. the field's uniqueness is determined exclusively using the values of the targeted table
+// This procedure helps with the following script design issues:
+// 1. ensuring incremental history files are kept in  synch (since they are usually keyed on a unique field)
+// 2. helping confirm that join field(s) are unique for checking cardinalities
+//
+// Use this function often to prove that DELTA, INCREMENTAL, DELETES or any other tranaction impacting a table are detected and maintained uniquely 
+// 
+// TECHNICAL NOTES: 
+// This procedures uses other functions to dynamically determine which method to use to detect uniqueness. 
+// One method is very fast (using QVW built-in functions) and the other uses LOAD RESIDENT to a temoprary table which can be slower on large tables
+
+sub is_field_value_unique_within_table (param_table_name, param_field_name)
+
+	//CALL sub_trace_event('Procedure [is_field_value_unique_within_table] has parameters table name [$(param_table_name)] field name [$(param_field_name)]') ;
+
+	if $(f_does_table_exist(param_table_name)) = 'Y' and $(f_does_field_exist_in_table(param_field_name,param_table_name)) = 'Y' then
+	
+		let _response = 'N' ;
+	
+			call is_field_name_unique_to_table (param_table_name, param_field_name )
+			
+			IF NoOfRows(param_table_name) <= 1 THEN 
+				call generate_warning ('Procedure [is_field_value_unique_within_table] Uniqueness cannot be checked if there are less than 2 rows in table [$(param_table_name)]');
+				let _response = 'N' ;
+			ELSE 	
+				if _is_field_name_unique_to_table = 'Y' then // use fastest method of detecting uniqueness
+							
+		//			call sub_trace_event ('FieldValueCount($(param_field_name))=' & FieldValueCount(param_field_name) & ' and NoOfRows($(param_table_name))=' & NoOfRows(param_table_name) ) ;
+					if FieldValueCount(param_field_name) = NoOfRows(param_table_name) then
+						let _response = 'Y' ;
+					else
+						let _response = 'N' ;
+						
+					end if 
+				
+				else // use slower method (but still alot faster than GROUP BY method)
+			
+					call generate_warning ('NON OPTIMIZED method of detecting field uniqueness is being used because field [$(param_field_name)] is not unique to table [$(param_table_name)]. Recommend you choose or create field name which is not unique to the target table');
+					
+					is_field_value_unique_within_table: 
+					LOAD
+						$(param_field_name) as UNIQUE1234567890_$(param_field_name)
+					RESIDENT
+						  $(param_table_name) 
+					;
+					if FieldValueCount ('UNIQUE1234567890_$(param_field_name)') = NoOfRows('is_field_value_unique_within_table') THEN
+						let _response = 'Y' ;
+					else
+						let _response = 'N' ;
+					end if 
+					drop table is_field_value_unique_within_table ;
+				
+				end if // END IF FOR _is_field_name_unique_to_table = 'Y'
+				
+			END IF // END IF FOR NoOfRows(param_table_name) <= 1
+	ELSE
+	
+		call generate_error ('Procedure [is_field_value_unique_within_table] has been passed an invalid table or field name') ;
+		let _response = 'N' ;
+	
+	END IF // does_table_exist
+		
+
+IF _response = 'N' THEN
+
+	call generate_warning ('The values of field [$(param_field_name)] in table [$(param_table_name)] CANNOT be confirmed as unique') ;
+ELSE 
+	call sub_trace_event ('The values of field [$(param_field_name)] in table [$(param_table_name)] have been confirmed as unique') ;
+END IF
+
+let is_field_value_unique_within_table = _response ;
+
+end sub
+
+
+// ========================================================================================================================
+// ALTERNATIVE : See custom function named "f_does_file_exist" for alternative simpler code to achieve the same thing
+// 
+SUB does_file_exist (param_filename, /* local variable */ v_local_var_file_existence)
+	
+	CALL sub_trace_event ('Checking for file existence : $(param_filename)') ;
+	
+	let v_local_var_file_existence =  filetime( param_filename )  ;
+	
+	if IsNull (v_local_var_file_existence) THEN
+		let _does_file_exist = 'N' ; // default
+	else
+		let _does_file_exist = 'Y' ;
+	end if
+		
+END SUB
+
+
+// ========================================================================================================================
+
+sub describe_all_tables 
+
+	let _number_of_tables = Nooftables() ;
+	
+		for _table_index = 1 to _number_of_tables
+		
+			call describe_table ( TableName(_table_index-1) ) ;
+
+		next _table_index
+
+end sub
+
+
+
+// ========================================================================================================================
+// check if 'before' table name exists
+// check if 'after' tale name exists
+
+sub rename_table (param_table_name_before, param_table_name_after)
+	
+	call sub_trace_event ('Procedure [rename_table] renaming table from [$(param_table_name_before)] to [$(param_table_name_after)]') ;
+	
+	if IsNull (param_table_name_before) or IsNull (param_table_name_after) THEN
+	
+		call generate_error ('Procedure [rename_table] has insufficient or incorrect table names') ;
+		exit sub ;
+		
+	END IF
+	
+//	call does_table_exist (param_table_name_before) ;
+//	if _does_table_exist <> 'Y' then ;
+
+	if $(f_does_table_exist(param_table_name_before)) <> 'Y' THEN
+		call generate_error ('Table [$(param_table_name_before)] does not exist in model and cannot be renamed') ;
+		exit sub ;
+	end if
+	
+//	call does_table_exist (param_table_name_after) ;
+	if $(f_does_table_exist(param_table_name_after)) = 'Y' THEN
+		call generate_error ('Table [$(param_table_name_after)] already exists in model and cannot be used in rename') ;
+		exit sub ;
+	end if
+
+	// got this far so must be good
+	rename table $(param_table_name_before) to $(param_table_name_after) ;
+	
+	// check if 'before' table does not exist and 'after' table does now
+	
+END SUB ;
+
+
+// ========================================================================================================================
+
+// constructs metadata about QVW session and table and replaces the table's comments with it
+// typically used just before a table is stored in a QVD file
+// NOTE: The COMMENT TABLE command associates the comment with the table name and not the table itself i.e. if the table is renamed the comment is still associated with the original table name
+// NOTE: To see the comment use TABLE VIEWER 
+// param_table_name= name of valid table
+// param_custom_metadata = additional text supplied that is included with metadata
+
+// todo - may want to have user code call this with value of varable [QVW_ECS_COMMON_FUNCTIONS.output_variable_values.complete_output_text] to populate [ param_custom_metadata]
+
+
+sub add_metadata_comment_to_table (param_table_name, param_custom_metadata, /* local variables */ local_v_qvw_metadata_comment, v_CR, v_field_index, v_field_name_list) 
+
+let add_metadata_comment_to_table.metadata_text =; // by default return NULL
+
+if $(f_does_table_exist(param_table_name)) <> 'Y' THEN ;
+
+	call generate_error ('Procedure [add_metadata_comment_to_table] was givem invalid table name [$(param_table_name)]') ;
+	
+	EXIT SUB ; // cannot update comment since table doesnt exist
+	
+END IF 
+
+let v_CR = chr(13) ;
+
+call  get_table_field_names (param_table_name, 'N') ;
+let v_field_name_list = get_table_field_names.field_names;
+//for v_field_index = 1 to NoOfFields(param_table_name)
+//	let v_field_name_list= v_field_name_list & FieldName(v_field_index,param_table_name) & ', ' ;
+//next v_field_index 
+
+
+// build metadata string
+let local_v_qvw_metdata_comment = 
+'** Auto generated metadata **' & v_CR & 
+'** To see this metadata in QVW hover over table in Table Viewer. When loading from a QVD LOAD table must be named as table name below for COMMENTs to be displayed. QVW associates COMMENTs with table names and not the table or the QVD itself **' & v_CR & 
+param_custom_metadata & v_CR & 
+''  & v_CR &
+'Timestamp      [' & Now() & ']  ' & v_CR &
+''  & v_CR &
+'[OS user =' & OSuser() & ']  ' & v_CR  &
+'[QVW user =' & QVuser() & ']  ' & v_CR &
+'[QVW version =' & QlikViewVersion() & ']  ' & v_CR   &
+'[Computer name =' & ComputerName() & ']  ' & v_CR &
+'[QVW document =' & DocumentName() & ']  ' & v_CR &
+'[QVW file time =' & FileTime ( DocumentPath() ) & ' (upon QVW opening)' & ']  ' & v_CR &
+'[QVW file size =' & FileSize ( DocumentPath() ) & ' bytes (upon QVW opening)' & ']  ' & v_CR &
+'[QVW path =' & Replace (DocumentPath(), '\', '/') & ']  ' & v_CR  & // have to replace all '\' since they can upset the LOG file for some reason
+'[QVW title =' & DocumentTitle() & ']  ' & v_CR &
+'[Last DB connect =' & ConnectString() & ']  ' & v_CR &
+'[Table name =' & param_table_name & ']  ' & v_CR &
+'[Number of rows =' & NoOfRows(param_table_name) & ']  ' & v_CR &
+'[Number of fields =' & NoOfFields(param_table_name) & ']  ' & v_CR &
+'[Field names =' & v_field_name_list & ']  ' & v_CR &
+'' 
+;
+
+
+call sub_trace_event ('Adding metadata comment to table [$(param_table_name)] ') ; //using the following text:' & v_CR & local_v_qvw_metdata_comment) ;
+
+
+COMMENT TABLE $(param_table_name) WITH '$(local_v_qvw_metdata_comment)' ;
+
+let add_metadata_comment_to_table.metadata_text = local_v_qvw_metdata_comment ;
+
+END SUB
+
+// ========================================================================================================================
+
+SUB get_just_the_filename (param_path_and_filename)
+
+// todo - use technique to scan string instead of LOAD method. will reduce LOG output
+
+	let get_just_the_filename=;
+	
+	if $(f_does_file_exist(param_path_and_filename)) <> 'Y' THEN  ;
+		call generate_warning ('Procedure [get_just_the_filename] was passed an invalid filename [$(param_path_and_filename)]' ) ;
+		EXIT SUB ;
+	END IF ;
+	
+	get_just_the_filename_file_information: // weird that most of these functions wont operate outside a LOAD statement
+	First 1  
+	LOAD 
+		FileDir() as field_FileDir,
+		FileName() as field_FileName,
+		FileBaseName() as field_FileBaseName,
+		FileExtension() as field_FileExtension,
+		FilePath() as field_FilePath
+	from 
+		'$(param_path_and_filename)' 
+	;
+	
+	
+	//let v_document_basename = peek( 'field_FileBaseName',0,'file_information' );
+	
+	//let v_document_extension = peek( 'field_FileExtension',0,'file_information' );
+	//let v_document_path = peek( 'field_FilePath',0,'file_information' ); 
+	
+	let _get_just_the_filename = peek( 'field_FileName',0,'file_information' );
+	//let v_document_dir = peek( 'field_FileDir',0,'file_information' );
+	
+	DROP TABLE get_just_the_filename_file_information ;
+
+END SUB
+
+// ========================================================================================================================
+SUB get_just_the_directory (param_path_and_filename)
+
+// todo - there is a better way to do this with string scanning i.e. scan from end of string backwards to 1st '\' (if exists) and then extract from that point to end of string
+
+	let get_just_the_path=;
+	
+	if $(f_does_file_exist(param_path_and_filename)) <> 'Y' THEN  ;
+		call generate_warning ('Procedure [get_just_the_directory] was passed an invalid filename [$(param_path_and_filename)]' ) ;
+		EXIT SUB ;
+	END IF ;
+	
+	get_just_the_directory_file_information: // weird that most of these functions wont operate outside a LOAD statement
+	First 1  
+	LOAD 
+		FileDir() as field_FileDir,
+		FileName() as field_FileName,
+		FileBaseName() as field_FileBaseName,
+		FileExtension() as field_FileExtension,
+		FilePath() as field_FilePath
+	from 
+	'$(param_path_and_filename)' 
+	;
+	
+	//let v_document_basename = peek( 'field_FileBaseName',0,'file_information' );
+	
+	//let v_document_extension = peek( 'field_FileExtension',0,'file_information' );
+	//let v_document_path = peek( 'field_FilePath',0,'file_information' ); 
+	
+	//let _get_just_the_filename=peek( 'field_FileName',0,'file_information' );
+	let _get_just_the_directory = peek( 'field_FileDir',0,'file_information' );
+	
+	DROP TABLE get_just_the_directory_file_information ;
+
+END SUB
+
+
+
+ // ========================================================================================================================
+// LOGs the field names that are unique to either table and those that are common to both tables
+// helpsto understand what will happen in a script when a JOIN or CONCATENATE is planned in a script
+// 
+// EXAMPLE USAGE : call compare_two_tables ('table_name_1', 'table_name_2') will log the fields that are common to both and distintive to each table
+// 
+// ========================================================================================================================
+
+sub compare_two_tables     (param_table_one, param_table_two, /* expect this to be name of calling variable */ v_compare_two_tables,    /* local variables */ local_field_index, local_field_count, local_field_name, local_common_fields, local_table_one_specific, local_table_two_specific, local_CRLF, local_indent, local_table_1_list, local_table_2_list ) ;
+
+    call sub_trace_event ('Procedure [compare_two_tables] has been passed table one [$(param_table_one)] and table two [$(param_table_one)]') ;
+    
+    let v_compare_two_tables = 'ERROR in procedure [compare_two_tables]' ; // default
+    let local_CRLF = /*CHR(10) & */CHR (13) ;
+    let local_indent = '    ' ;
+    
+    if $(f_does_table_exist(param_table_one)) <> 'Y' THEN 
+        call generate_error ('Table one [$(param_table_one)] does not exist') ;
+        EXIT SUB ;
+    END IF
+
+    if $(f_does_table_exist(param_table_two)) <> 'Y' THEN 
+        call generate_error ('Table two [$(param_table_two)] does not exist') ;    
+        EXIT SUB ;
+    END IF
+    
+    call get_table_field_names(param_table_one, 'N') ; LET local_table_1_list = get_table_field_names.field_names ;
+    call get_table_field_names(param_table_two, 'N') ; LET local_table_2_list = get_table_field_names.field_names ;
+    
+       
+    call compare_two_delimited_lists (local_table_1_list, local_table_2_list, ';') ;
+   
+    let v_compare_two_tables = local_CRLF ;
+    let v_compare_two_tables = v_compare_two_tables & local_indent & 'Procedure [compare_two_tables] comparing Table1 [$(param_table_one)] and Table2 [$(param_table_two)] :' & local_CRLF ;
+    let v_compare_two_tables = v_compare_two_tables & local_indent & 'Fields common to both tables [' & compare_two_delimited_lists.common_to_both_lists & ']'     & local_CRLF;
+    let v_compare_two_tables = v_compare_two_tables & local_indent & 'Fields specific to table1    [' & compare_two_delimited_lists.list_1_only & ']' & local_CRLF ;
+    let v_compare_two_tables = v_compare_two_tables & local_indent & 'Fields specific to table2    [' & compare_two_delimited_lists.list_2_only & ']' & local_CRLF ;
+    
+    call sub_trace_event ( v_compare_two_tables ) ;
+
+//	compare_two_tables
+end sub
+
+
+ // ========================================================================================================================
+// LOGs the field names that are unique to either table and those that are common to both tables
+// helpsto understand what will happen in a script when a JOIN or CONCATENATE is planned in a script
+// 
+// EXAMPLE USAGE : call compare_two_qvds ('qvd_filename1', 'qvd_filename1') will log the fields that are common to both and distintive to each table
+// 
+// ========================================================================================================================
+
+sub compare_two_qvds (param_qvd_file_1, param_qvd_file_2, /* expect this to be name of calling variable */  /* local variables */ local_CRLF, local_indent, local_filename_1, local_filename_2) ;
+
+    call sub_trace_event ('Procedure [compare_two_qvds]:') ;
+    call sub_trace_event ('                         QVD1:' & param_qvd_file_1) ;
+    call sub_trace_event ('                         QVD2:' & param_qvd_file_2) ;
+    
+        
+    let	compare_two_qvds.comparison_text = 'ERROR in procedure [compare_two_qvds]' ; // default
+    let local_CRLF = /*CHR(10) & */CHR (13) ;
+    let local_indent = '    ' ;
+    
+    if $(f_does_file_exist(param_qvd_file_1)) <> 'Y' THEN 
+        call generate_error ('QVD doesnt exist: ' & param_qvd_file_1) ;
+        EXIT SUB ;
+    END IF
+
+    if $(f_does_file_exist(param_qvd_file_2)) <> 'Y' THEN 
+        call generate_error ('QVD doesnt exist: ' & param_qvd_file_2) ;
+        EXIT SUB ;
+    END IF
+    
+    call describe_qvd_file (param_qvd_file_1, 'N') ; let local_filename_1 = describe_qvd_file.filename ;
+    call describe_qvd_file (param_qvd_file_2, 'N') ; let local_filename_2 = describe_qvd_file.filename ;
+    
+    call get_qvd_field_names(param_qvd_file_1 , 'N') ; LET local_qvd_list_1 = get_qvd_field_names.field_names ;
+    call get_qvd_field_names(param_qvd_file_2, 'N') ; LET local_qvd_list_2 = get_qvd_field_names.field_names ;
+    
+       
+    call compare_two_delimited_lists (local_qvd_list_1 , local_qvd_list_2, ';') ;
+   
+    call sub_trace_event ('');
+    call sub_trace_event (local_indent & 'Procedure [compare_two_QVDs] comparing QVD1 [$(local_filename_1)] and QVD2 [$(local_filename_2)] :');
+    call sub_trace_event (local_indent & 'Fields common to both tables [' & compare_two_delimited_lists.common_to_both_lists & ']' );
+	call sub_trace_event (local_indent & 'Fields specific to QVD1    [' & compare_two_delimited_lists.list_1_only & ']' ) ;
+	call sub_trace_event (local_indent & 'Fields specific to QVD2    [' & compare_two_delimited_lists.list_2_only & ']' ) ;
+    
+    //call sub_trace_event ( compare_two_qvds.comparison_text ) ;
+
+	
+
+end sub
+
+
+
+// ========================================================================================================================
+
+// Uses QVW function "SubField"
+// subfield( s, 'delimiter' [ , index ] )
+// example: 
+// substringcount( text , substring )
+
+// cannot have a ',' (comma) in data. The code will replace all commas with semi-colons, sort the list and then re-instate the commas
+
+// SEE 'END SUB' for example usages
+
+sub sort_delimited_list (param_delimited_list, param_delimiter /* local variables */, local_field_index, local_numer_of_fields, local_swap_indicator, local_temp_field_value, local_temp_table_name, local_reinstate_commas, local_final_delimiter )
+
+	let param_delimited_list 	= trim (param_delimited_list) ;
+	let param_delimiter			= TRIM (param_delimiter) ;
+	
+	//call sub_trace_event ('Procedure [sort_delimited_list] has been passed parameters param_delimited_list=[$(param_delimited_list)] and param_delimiter=[$(param_delimiter)]') ;
+
+	// validation
+	IF param_delimiter='' or IsNull (param_delimiter) OR IsNull (param_delimited_list) OR param_delimited_list = '' THEN ; LET _sort_delimited_list = 'Parameter [param_delimited_list] or [param_delimiter] is either NULL or empty' ; call generate_error (_sort_delimited_list) ; EXIT SUB ; END IF ;
+	
+	IF param_delimiter = ',' THEN ; 
+		//call generate_warning ('Procedure [sort_delimited_list] parameter [param_delimiter] is a comma and will be substititued with a semicolon. All commas in the [param_delimited_list] will be replaced but re-instated upon completion ') ; 
+		LET local_reinstate_commas = 'Y';
+		let param_delimited_list = REPLACE (param_delimited_list, ',' , ';') ;
+		LET param_delimiter = ';' ;
+	ELSE
+		LET local_reinstate_commas = 'N';
+	END IF ;
+	
+	// defaults
+	IF Right (param_delimited_list,1 ) = param_delimiter THEN ; let param_delimited_list=left (param_delimited_list,len (param_delimited_list)-1); let local_final_delimiter ='Y'; ELSE ; let local_final_delimiter = 'N' ; END IF ; // remove delimiter (it will be added back)
+	
+	let local_numer_of_fields = SubStringCount( param_delimited_list , param_delimiter ) ; // detect how many fields there are
+	
+	//call sub_trace_event ('Procedure [sort_delimited_list_using_bubble_sort] with param_delimited_list [$(param_delimited_list)] param_delimiter [$(param_delimiter)] local_numer_of_fields [$(local_numer_of_fields)]' ) ;
+	
+	let local_temp_table_name = 'sort_delimited_list_using_inline_table' ; // must not clash with any existing table or else QVW will rename unpredictably
+
+	$(local_temp_table_name)_temp: // make temporary table with one row containing all the delimited values
+	NOCONCATENATE LOAD * INLINE [
+	field_name_sort_delimited_list_using_inline_table
+	$(param_delimited_list)
+	]
+	;
+	
+	$(local_temp_table_name): // make separate rows from each delimited value using SUBFIELD function
+	NOCONCATENATE LOAD 
+		SubField (field_name_sort_delimited_list_using_inline_table, '$(param_delimiter)') as field_name_sort_delimited_list_using_inline_table
+	RESIDENT 
+		$(local_temp_table_name)_temp
+	;
+	
+	DROP TABLE $(local_temp_table_name)_temp ;
+	
+	$(local_temp_table_name)_sorted: // now sort it
+	NOCONCATENATE LOAD 
+	
+	*
+	RESIDENT 
+		$(local_temp_table_name)
+	ORDER BY 1 ASC // basically use ORDER BY to sort the list
+	;
+	
+
+	DROP TABLE $(local_temp_table_name) ;
+	
+
+$(local_temp_table_name)_collapsed: // then get all those separate rows back into a single row
+	NOCONCATENATE Load 
+		concat(field_name_sort_delimited_list_using_inline_table, '$(param_delimiter)' ) as $(local_temp_table_name)_collapsed
+	RESIDENT 
+	$(local_temp_table_name)_sorted
+;
+	
+
+	//  and now PEEK that single row
+	let param_delimited_list = PEEK ('$(local_temp_table_name)_collapsed', 0, '$(local_temp_table_name)_collapsed' ) & param_delimiter ;
+
+	DROP TABLE $(local_temp_table_name)_collapsed ;
+	DROP TABLE $(local_temp_table_name)_sorted ;
+
+
+	if local_reinstate_commas = 'Y' THEN ; let param_delimited_list = REPLACE (param_delimited_list, ';', ',') ; END IF ;
+	if local_final_delimiter = 'N' THEN ; let param_delimited_list = LEFT (param_delimited_list, LEN(param_delimited_list)-1) ; ELSE /* dont add add it */ ; END IF;
+
+	LET sort_delimited_list.sorted_list = param_delimited_list;
+	
+end sub
+//// param_delimited_list e.g. 
+//call sort_delimited_list ('Z,Y,X', ',') ; trace sort_delimited_list.sorted_list=[$(sort_delimited_list.sorted_list)] ; //returns 'X,Y,Z' in global variable [sort_delimited_list.sorted_list] 
+//let v_some_text_variable='X,Y,Z'; call sort_delimited_list (v_some_text_variable, ',');   TRACE v_some_text_variable=[$(v_some_text_variable)]  sort_delimited_list.sorted_list=[$(sort_delimited_list.sorted_list)] ; //returns 'X,Y,Z' in global variable [sort_delimited_list.sorted_list] and also in [v_some_text_variable]
+//call sort_delimited_list ('Z;Y;X') ; trace sort_delimited_list.sorted_list=[$(sort_delimited_list.sorted_list)] ; //   semi-colon assumed for delimiter
+//call sort_delimited_list ('Z Y X', ';') ; trace sort_delimited_list.sorted_list=[$(sort_delimited_list.sorted_list)] ; //returns 'Z Y X' in global variable [sort_delimited_list.sorted_list]   text didnt contain delimiter so cannot sort
+//call sort_delimited_list ('', ';') ; trace sort_delimited_list.sorted_list=[$(sort_delimited_list.sorted_list)] ; //generates an error since non-empty first parameter is required
+//
+//exit script;
+
+
+// ====================================================================================================================================================================================
+// accepts a QVD filename and returns 2 global variables with the field names delimited by ';'
+// get_qvd_field_names.field_names 			RETURNS field names in original sequence
+// get_qvd_field_names.field_names_sorted 	RETURNS field names in ascending alphanumeric sequence
+sub get_qvd_field_names (param_qvd_filename, param_optional_sort_yn /* local variables */,  local_field_index ) 
+
+let get_qvd_field_names.field_names =;
+let get_qvd_field_names.field_names_sorted =;
+
+	IF $(f_does_file_exist(param_qvd_filename)) = 'Y' THEN ;
+		
+		let get_qvd_field_names.field_names=;
+		for local_field_index = 1 to QvdNoOfFields( param_qvd_filename ) step 1
+			let get_qvd_field_names.field_names = get_qvd_field_names.field_names & QvdFieldName( param_qvd_filename, local_field_index) & ';' ; 
+		next local_field_index ;
+		
+		IF UPPER (param_optional_sort_yn) = 'Y' THEN ;
+			let get_qvd_field_names.field_names_sorted = get_qvd_field_names.field_names ;
+			call sort_delimited_list (get_qvd_field_names.field_names_sorted, ';') ;
+		ELSE
+			let get_qvd_field_names.field_names_sorted=;
+		END IF ;	
+	ELSE 
+	
+		let _get_qvd_field_names = 'ERROR Procedure [get_qvd_field_names] cannot get field names. File doesnt exist [$(param_qvd_filename)]' ;
+		call generate_error (get_qvd_field_names.field_names) ;
+		
+	END IF ;
+
+
+END SUB
+
+// ====================================================================================================================================================================================
+
+// accepts a (in memory) table name and returns 2 global variables with the field names delimited by ';'
+// _get_table_field_names 			RETURNS field names in original sequence
+// _get_table_field_names_sorted 	RETURNS field names in ascending alphanumeric sequence
+sub get_table_field_names (param_table_name, param_optional_sort_yn /* local variables */,  local_field_index ) 
+
+let get_table_field_names.field_names =;
+let get_table_field_names.field_names_sorted =;
+
+
+	IF $(f_does_table_exist(param_table_name)) = 'Y' THEN ;
+		
+		let get_table_field_names.field_names= '';
+		for local_field_index = 1 to NoOfFields(param_table_name ) step 1 
+			let get_table_field_names.field_names = get_table_field_names.field_names & FieldName( local_field_index, param_table_name) & ';' ; 
+		next local_field_index ;
+		
+		let get_table_field_names.field_names_sorted = get_table_field_names.field_names ;
+		IF UPPER (param_optional_sort_yn) = 'Y' THEN ;
+			let get_table_field_names.field_names_sorted = get_table_field_names.field_names ;
+			call sort_delimited_list (get_table_field_names.field_names_sorted, ';') ;
+		ELSE
+			let get_table_field_names.field_names_sorted=;
+		END IF ;	
+
+	ELSE 
+	
+		let get_table_field_names.field_names = 'ERROR Procedure [get_table_field_names] cannot get field names. Table doesnt exist [$(param_table_name)]' ;
+		call generate_error (get_table_field_names.field_names) ;
+		
+	END IF ;
+
+
+END SUB
+
+// ====================================================================================================================================================================================
+
+sub compare_two_delimited_lists (param_list_1, param_list_2, param_delimiter /* local variables */, local_param_list_1, local_param_list_2, local_subfield, local_list_1_index,  local_list_2_index, local_list_1_fieldcount, local_list_2_fieldcount, local_list_1_only, local_list_2_only, local_common_to_both, local_does_field_match)
+
+//todo  check params
+IF IsNULL (param_list_1) OR IsNULL (param_list_2)  OR trim (param_list_1)  = '' or trim (param_list_2)  = '' or IsNull (param_delimiter) OR trim (param_delimiter) = '' THEN
+
+	LET local_subfield = 'Procedure [compare_two_delimited_lists] is missing parameters. It was passed [$(param_list_1)], [$(param_list_2)] and [$(param_delimiter)]' ;
+	LET _compare_two_delimited_lists.common_to_both_lists = local_subfield;
+	CALL generate_error (compare_two_delimited_lists.common_to_both_lists ) ;
+	EXIT SUB ;	
+ENDIF
+
+// add any missing delimiters to beginning and end of parameters
+let param_list_1 = TRIM (param_list_1) ; 
+IF LEFT (param_list_1, 1) <> param_delimiter THEN ; LET param_list_1 =  param_delimiter & param_list_1  ; END IF ;
+IF RIGHT (param_list_1, 1) <> param_delimiter THEN ; LET param_list_1 =  param_list_1  &  param_delimiter ; END IF ;
+
+let param_list_2 = TRIM (param_list_2) ; 
+IF LEFT (param_list_2, 1) <> param_delimiter THEN ; LET param_list_2=  param_delimiter & param_list_2  ; END IF ;
+IF RIGHT (param_list_2, 1) <> param_delimiter THEN ; LET param_list_2 =  param_list_2  &  param_delimiter ; END IF ;
+
+// now with a delimeter surrounding each field the faster INDEX function can be used
+
+
+let local_list_1_fieldcount = substringcount( param_list_1 , param_delimiter ) ;
+let local_list_2_fieldcount = substringcount( param_list_2 , param_delimiter ) ;
+let local_list_1_only = ''; 
+let local_list_2_only = '' ;
+let local_common_to_both = '' ;
+
+FOR local_list_1_index = 1 to local_list_1_fieldcount
+	
+	IF INDEX (param_list_2, subfield(param_list_1, param_delimiter , local_list_1_index) ) = 0 THEN //
+		let local_list_1_only = local_list_1_only & subfield(param_list_1, param_delimiter , local_list_1_index) & param_delimiter ;
+	ELSE 
+		let local_common_to_both = local_common_to_both & subfield(param_list_1, param_delimiter , local_list_1_index) & param_delimiter ;
+	END IF
+	
+next local_list_1_index ;
+
+FOR local_list_2_index = 1 to local_list_2_fieldcount
+
+	IF INDEX (param_list_1, subfield(param_list_2, param_delimiter , local_list_2_index) ) = 0 THEN //
+		let local_list_2_only = local_list_2_only & subfield(param_list_2, param_delimiter , local_list_2_index) & param_delimiter ;
+	ELSE 
+		//let local_common_to_both = local_common_to_both & subfield(param_list_1, param_delimiter , local_list_1_index) & param_delimiter ;
+	END IF
+	
+
+next local_list_2_index ;
+
+
+LET compare_two_delimited_lists.common_to_both_lists = local_common_to_both;
+LET compare_two_delimited_lists.list_1_only = local_list_1_only ;
+LET compare_two_delimited_lists.list_2_only = local_list_2_only ;
+
+END SUB
+//call compare_two_delimited_lists ('A;B;C;' , 'A;B;C', ';' )
+//call sub_trace_event('_compare_two_delimited_lists.common_to_both_lists=$(_compare_two_delimited_lists.common_to_both_lists)') ;
+//call sub_trace_event('_compare_two_delimited_lists.list_1_only = $(_compare_two_delimited_lists.list_1_only)' ) ;
+//call sub_trace_event('_compare_two_delimited_lists.list_2_only= $(_compare_two_delimited_lists.list_2_only)')  ;
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+// ========================================================================================================================
+
+sub store_table_in_qvd (param_table_name, param_qvd_file, param_write_metadata_yn, param_describe_yn  /* local vars */ ) 
+
+	call sub_trace_event ('Procedure [store_table_in_qvd] attempting to store table [$(param_table_name)] in QVD file:$(param_qvd_file)') ;
+	
+	// check if table exists
+	IF $(f_does_table_exist(param_table_name)) <> 'Y' THEN 
+		call generate_error ('Procedure [store_table_in_qvd] unable to write table [$(param_table_name)] to QVD since table does not exist') ;
+		EXIT SUB ;
+	ENDIF
+	
+	// optionally describe source table and target qvd 
+	if UPPER (param_describe_yn) = 'Y' THEN
+		call sub_trace_event ('Procedure [store_table_in_qvd] is about to over-write the following QVD:') ;
+		call describe_qvd_file (param_qvd_file, 'Y') ;
+	END IF
+	
+	// optionally build metadata (default to doing so)
+	IF UPPER (param_write_metadata_yn) = 'Y' THEN
+		CALL add_metadata_comment_to_table (param_table_name) ;
+	END IF
+	
+	// STORE QVD
+	STORE $(param_table_name) INTO $(param_qvd_file) (qvd);
+
+	// check if filemodified datetime is different, if not then report error (coould not over-write QVD)	
+	// todo
+
+	//call sub_trace_event (add_metadata_comment_to_table.metadata_text) ;
+
+	if UPPER (param_describe_yn) = 'Y' THEN
+		call sub_trace_event ('Procedure [store_table_in_qvd] has stored table [$(param_table_name)] in the following QVD:') ;
+		call describe_qvd_file (param_qvd_file, 'Y') ;
+	END IF
+
+	
+END SUB
+
+
+
+// ========================================================================================================================
+
+
+sub describe_table (param_table_name, param_fields_output_yn)
+
+//trace Call to SUB [describe_table] with parameter [param_table_name] of value [$(param_table_name)] ;
+
+if $(f_does_table_exist(param_table_name)) <> 'Y' then
+
+	call generate_error ('Procedure [describe_table] has been passed an invalid table name [$(param_table_name)]') ;
+	EXIT SUB ;
+	 
+ELSE
+
+	let v_temp_a = NoOfRows('$(param_table_name)') ;
+	let v_temp_b = NoOfFields('$(param_table_name)') ;
+	let v_temp_c = 1+TableNumber('$(param_table_name)') ; // quotes needed despite what manual says
+	let v_temp_d = NoOfTables() ;
+	
+	//call sub_trace_event ('Procedure [describe_table]  Table [$(param_table_name)]  Rows ['& num (v_temp_a, '###,###,###,###') & ']  Fields [$(v_temp_b)]  Table Number [$(v_temp_c)] of [$(v_temp_d)] in the script so far') ;
+	call sub_trace_event ('Table [$(param_table_name)] contains [rows='& num (v_temp_a, '###,###,###,###') & ']  [fields=$(v_temp_b)]  [table $(v_temp_c) of $(v_temp_d)]') ;
+
+	if UPPER(param_fields_output_yn)='Y' then
+				
+		call get_table_field_names(param_table_name, 'N') ;
+		call sub_trace_event ('       Fields: ' & get_table_field_names.field_names) ;
+	
+	ENDIF
+	
+	call sub_trace_event ('') ; // force a blank line
+	
+	
+endif 
+
+end sub 
+
+// ========================================================================================================================
+// returns global variables and logs most of it to the LOG file
+// describe_qvd_file.number_of_rows using QvdNoOfRecords( filename )
+// describe_qvd_file.filename using FileName( )
+// describe_qvd_file.number_of_fields using QvdNoOfFields( filename )
+// describe_qvd_file.file_last_modified using FileTime( [ filename ] )
+// describe_qvd_file.file_creation using QvdCreateTime( filename )
+// describe_qvd_file.table_name using QvdTableName( filename )
+// describe_qvd_file.file_size using FileSize( [ filename ] )
+//
+// will get fields only if parameter param_get_fields_yn is set to 'Y' (getting fields can take a few seconds and generate alot of LOG output)
+// describe_qvd_file.field_names QvdFieldName( filename, field_no)
+// describe_qvd_file.field_names_sorted QvdFieldName( filename, field_no)
+
+
+Sub describe_qvd_file (param_qvd_file, param_optional_get_fields_yn, param_optional_identifier, /* local variables */ local_field_index, local_field_names, local_filename, local_qvd_number_of_records, local_qvd_datetime, local_filesize, local_qvd_table_name, local_qvd_number_of_fields )
+
+// param_optional_identifier  if this is set, its used to add an identifier to the global variables returned to help the calling code separate different variabales for each QVD. optional and not expected to be used often
+IF IsNull(param_optional_identifier) 	THEN ; let param_optional_identifier=''; END IF;
+IF IsNull(param_optional_get_fields_yn) THEN ; let param_optional_get_fields_yn=''; END IF;
+
+
+let describe_qvd_file.number_of_rows=;
+let describe_qvd_file.filename=;
+let describe_qvd_file.file_last_modified=; // no need
+let describe_qvd_file.file_creation =;
+let describe_qvd_file.file_size =;
+let describe_qvd_file.table_name =;
+let describe_qvd_file.number_of_fields=;
+let describe_qvd_file.field_names =;
+let describe_qvd_file.field_names_sorted=;
+
+
+IF $(f_does_file_exist(param_qvd_file)) = 'Y' THEN
+
+	let describe_qvd_file.number_of_rows 	= num (QvdNoOfRecords( '$(param_qvd_file)' ), '###,###,###,###');
+	let describe_qvd_file.file_creation 	= QvdCreateTime( '$(param_qvd_file)' );
+	let describe_qvd_file.file_size 		= num ( FileSize(param_qvd_file), '###,###,###,###') ;
+	let describe_qvd_file.table_name 		= QvdTableName( '$(param_qvd_file)' ) ;
+	let describe_qvd_file.number_of_fields 	= QvdNoOfFields( '$(param_qvd_file)' ) ;
+	
+	//describe_qvd_file.qvd_file_time: // QVW FileTime function which I'm not sure actually reads Windows correctly but its all I have
+	//noconcatenate LOAD FileTime('$(param_qvd_file)') as describe_qvd_file.qvd_file_time AutoGenerate 1; LET describe_qvd_file.qvd_file_time = Peek ('describe_qvd_file.qvd_file_time', 0, 'describe_qvd_file.qvd_file_time') ; DROP Table scribe_qvd_file.qvd_file_time ;
+	
+	//call get_just_the_filename (param_qvd_file); let describe_qvd_file.filename = _get_just_the_filename;
+	let describe_qvd_file.filename = $(f_get_just_the_filename(param_qvd_file));
+	let describe_qvd_file.file_last_modified= FileTime(param_qvd_file) ;
+	
+	//call sub_trace_event ('QVD [$(describe_qvd_file.filename)] contains [table=$(describe_qvd_file.table_name)]  [fields=$(describe_qvd_file.number_of_fields)]  [rows=$(describe_qvd_file.number_of_rows)]  [Creation=$(describe_qvd_file.file_creation)]  [Modification=$(describe_qvd_file.qvd_file_time)] [size=$(describe_qvd_file.file_size) bytes]  file=$(param_qvd_file)' ) ;
+	//call sub_trace_event ('QVD [$(describe_qvd_file.filename)] contains [table=$(describe_qvd_file.table_name)]  [fields=$(describe_qvd_file.number_of_fields)]  [rows=$(describe_qvd_file.number_of_rows)]  [Creation=$(describe_qvd_file.file_creation)] [size=$(describe_qvd_file.file_size) bytes]  file=$(param_qvd_file)' ) ;
+		
+//	if UPPER (param_optional_get_fields_yn) = 'Y' THEN ; // just output field names all the time
+//		call get_qvd_field_names(param_qvd_file, 'N') ; // get fields but dont sort by default
+//		let describe_qvd_file.field_names 			= get_qvd_field_names.field_names ;
+//		let describe_qvd_file.field_names_sorted 	= get_qvd_field_names_sorted;
+//		call sub_trace_event ('                Fields in QVD:' & describe_qvd_file.field_names ) ;
+//	END IF;
+	
+
+ELSE
+	
+	call generate_warning ('Procedure [describe_qvd_file] QVD file doesnt exist [$(param_qvd_file)]' ) ;
+	
+END IF 
+	
+
+end sub
+
+
+
+// SubField ('string to search', 'delimiter' index)
+
+
+// ========================================================================================================================
+// routine to DROP all tables in a ',' delimited list. provides better error checking and LOGing than standard QVW
+
+//SUB drop_tables ( param_table_name ) 
+//
+//
+////	call does_table_exist (param_table_name) ;
+//
+//	if $(f_does_table_exist(param_table_name)) = 'Y' then
+//		call sub_trace_event ('Dropping table [$(param_table_name)]') ;
+//		DROP TABLE $(param_table_name) ;
+//		IF $(f_does_table_exist(param_table_name)) = 'Y' THEN
+//			call generate_error ('Procedure [drop_table] was unable to drop table [$(param_table_name)]') ;
+//		END IF ;
+//	else
+//		call generate_error ('Procedure [drop_table] was passed invalid table name [$(param_table_name)]') ;
+//	end if ;	
+//
+//END SUB
+
+// specific (simple) routine to log attempt to DROP etc and provide guaranteed error detection
+
+SUB drop_table ( param_table_name ) 
+
+	if $(f_does_table_exist(param_table_name)) = 'Y' then
+		call sub_trace_event ('Dropping table [$(param_table_name)]') ;
+		DROP TABLE $(param_table_name) ;
+		IF $(f_does_table_exist(param_table_name)) = 'Y' THEN
+			call generate_error ('Procedure [drop_table] was unable to drop table [$(param_table_name)]') ;
+		END IF ;
+	else
+		call generate_error ('Procedure [drop_table] was passed invalid table name [$(param_table_name)]') ;
+	end if ;	
+
+END SUB
+
+
+
+
+// ========================================================================================================================
+// Procedure helps with troubleshooting by reducing the places that DROP TABLE(S) statements are added or commented out in a script
+// Calling it and passing the table name of interest will leave that table intact so that visualizations and model viewer (CTRL-T) are focused on that table
+// All parameters and comparisons are case sensitive
+// TECHNICAL NOTE : demonstrates building an array using a delimited string and then using FOR EACH to traverse that array
+
+sub drop_all_tables_except (param_table_name )
+
+	call sub_trace_event('Procedure [drop_all_tables_except] will drop all tables except [$(param_table_name)]') ;
+	
+	let _number_of_tables = Nooftables() ;
+	let _SINGLE_QUOTE = chr(39);
+	let _table_name_list = '';
+	
+//	call does_table_exist (param_table_name) ;
+	if $(f_does_table_exist(param_table_name)) = 'Y' then
+	
+		// Build list of all tables
+		for _table_index = 1 to _number_of_tables
+		
+			let _table_name_list = _table_name_list & _SINGLE_QUOTE & TableName(_table_index-1) & _SINGLE_QUOTE ;
+		
+			IF _table_index < _number_of_tables THEN  
+				LET _table_name_list = _table_name_list & ',' ;
+			END IF
+			
+		next _table_index
+		
+		// Use list to drop all tables except the one passed as a param
+		for each _table_index in $(_table_name_list)
+		
+			IF _table_index <> param_table_name then
+				DROP TABLE $(_table_index) ;
+			END IF
+				
+		next // _table_index
+		
+		// yes i could have done this using one loop instead of a FOR TO STEP as well as FOR EACH but i was experimenting with FOR EACH
+		
+		
+	else
+		call generate_error ('Procedure [drop_all_tables_except] passed invalid table name [$(param_table_name)]') ;
+	end if ;	
+
+
+end sub
+
+
+
+// =======================================================================================================================================
+
+// =======================================================================================================================================
+
+
+
+
+// =======================================================================================================================================
+// =======================================================================================================================================
+// =======================================================================================================================================
+
+// comma delimited list of variables named to output to LOG file
+
+sub output_variable_values (param_variable_list, /* LOCAL VARS */ v_local_CR, local_output_complete_text, local_output_text, local_variable_list, local_variable_index, local_list_delimiter, local_number_of_variables, local_variable_name, local_variable_value, local_MAX_FORMAT_LENGTH, local_max_length, local_formatting_spaces)
+
+	set local_MAX_FORMAT_LENGTH=30 ; // maximum number of characters allowed for formatting variable name. longer var names will be truncated.
+	let local_max_length=0;
+	let local_output_complete_text= ''; // emppty to start with
+	
+	//call sub_trace_event ('Procedure [output_variable_values] outputs the value of variables shown below. Semi-colons will be replaced with commas to avoid formatting issues in the QVW TRACE command') ;
+	let local_list_delimiter=',' ;
+				
+	let local_variable_list = TRIM (param_variable_list) ;
+	IF RIGHT (local_variable_list, 1) <> local_list_delimiter THEN ; LET local_variable_list = local_variable_list & local_list_delimiter; END IF;
+	
+	let local_number_of_variables = substringcount ( local_variable_list, local_list_delimiter) ;
+
+	//call sort_delimited_list (local_variable_list, ',') ; // todo-remove this and check still works
+	//LET local_variable_list = sort_delimited_list.sorted_list ;
+			
+	//TRACE param_variable_list=$(param_variable_list) ;
+	//TRACE local_variable_list=$(local_variable_list) ;
+
+	// analyze variable name lengths first
+	FOR local_variable_index = 1 to local_number_of_variables step 1 
+	
+		//TRACE local_variable_index=$(local_variable_index) ;
+		let local_variable_name = SubField (local_variable_list, local_list_delimiter, local_variable_index) ;
+		IF LEN (local_variable_name) > local_max_length THEN ;
+			LET local_max_length  = LEN (local_variable_name) ;
+		END IF ;
+	NEXT local_variable_index ;
+	
+	FOR local_variable_index = 1 to local_number_of_variables step 1 
+	
+		//TRACE local_variable_index=$(local_variable_index) ;
+		let local_variable_name = SubField (local_variable_list, local_list_delimiter, local_variable_index) ;
+		let local_variable_value = '$' & '(' & local_variable_name & ')' ;
+		let local_variable_value = local_variable_value ;
+		
+		//let local_variable_value = $(local_variable_value) ;
+		
+		LET local_formatting_spaces = repeat( ' ',  local_max_length - LEN (local_variable_name) ) ;
+		LET local_output_text = '    Variable [' & local_variable_name & local_formatting_spaces & '] has value [$(local_variable_value)' & ']' ;
+		call sub_trace_event (local_output_text) ;
+		
+		LET local_output_complete_text = local_output_complete_text & local_output_text ;
+		
+	
+	NEXT local_variable_index ;
+
+
+	call sub_trace_event ('') ;    
+
+
+LET QVW_ECS_COMMON_FUNCTIONS.output_variable_values.complete_output_text = local_output_complete_text; // supply the complete text output in case calling routine needs it
+
+end sub ;
+
+
+
+
+
+// =======================================================================================================================================
+
+
+SUB get_datetime
+
+	LET log_datetime.now = now (1) ;
+	
+	let log_datetime.now = timestamp (log_datetime.now , 'YYYY-MM-DD hh:mm:ss') ;
+	
+END SUB
+
+// =======================================================================================================================================
+SUB log_datetime  ;
+	
+	call get_datetime ;
+	
+	call sub_trace_event ('LOG datetime: $(log_datetime.now)   (no millionths of a seconds value is available)') ; 
+
+end sub ;
+// =======================================================================================================================================
+// Define a function which returns TRUE or FALSE depending on whether OSuser is SVC_QLIKVIEW or not. Publisher uses this system user 
+// whereas user sessions using Developer (via Remote Desktop etc) will have values such as OPRSYS\SOIO for OSuser function
+// results of function can be used to determine if its safe to use MSGBOX in a LOAD script
+// trying to display a MSGBOX  in a LOAD script that runs within Publisher will cause the QVW session to hang since it will wait for 
+// user input that is never supplied
+/*
+
+QVW function "OSuser" returns:
+"OPRSYS\SVC_QLIKVIEW" when ran on DEV Publisher
+ whhen ran on PROD Publisher
+DEV
+OSuser=OPRSYS\SVC_QLIKVIEW
+ComputerName=WTSDRF4G 
+PROD
+ComputerName =WPSDL30B
+OSuser=OPR\SVC_QLIKVIEW
+
+*/
+
+Set f_is_qvw_running_in_publisher=IF ( INDEX (UPPER (OSuser()), 'SVC_QLIKVIEW', 1) > 1, True (), False() ) ;
+
+
+sub generate_warning_dialog (param_message)
+
+
+	IF $(f_is_qvw_running_in_publisher()) = TRUE THEN
+	
+		call generate_warning ('Procedure [generate_warning_dialog] was called but function [f_is_qvw_running_in_publisher] determined that the script is running in Publisher therefore will not show a MSGBOX') ;
+	ELSE 
+		
+		generate_warning_dialog_table:
+		Load MsgBox('$(param_message)', 'WARNING', 'OK', 'ICONASTERISK') as generate_warning_dialog.field autogenerate 1; 
+		// don't care about the response
+		DROP TABLE generate_warning_dialog_table ;
+		
+	END IF ;
+
+END SUB ;
+
+// =======================================================================================================================================
+
+sub generate_YESNO_dialog (param_message)
+
+
+	IF $(f_is_qvw_running_in_publisher()) = TRUE THEN
+	
+		call generate_warning ('Procedure [generate_warning_dialog] was called but function [f_is_qvw_running_in_publisher] determined that the script is running in Publisher therefore will not show a MSGBOX') ;
+	ELSE 
+		
+		generate_YESNO_dialog_table:
+		Load MsgBox('$(param_message)', 'ICONQUESTION', 'YESNO', 'ICONASTERISK') as generate_YESNO_dialog.field autogenerate 1; 
+		// don't care about the response
+		LET generate_YESNO_dialog.field = PEEK ('generate_YESNO_dialog.field',0, 'generate_YESNO_dialog_table') ;
+		LET generate_YESNO_dialog.response = IF (generate_YESNO_dialog.field = 6, 'YES', 'NO') ;
+		DROP TABLE generate_YESNO_dialog_table ;
+		
+	END IF ;
+
+END SUB ;
+
+
+
+
+// =======================================================================================================================================
+// =======================================================================================================================================
+
+
+
+
+
+// =======================================================================================================================================
+// =======================================================================================================================================
+
+
+
+
+
+// =======================================================================================================================================
+
+//call sub_trace_event ('Common Routines code was last updated 07/11/2013')
+//call sub_trace_event ('Add new function [generate_warning_dialog] which is typpicaly used to support interactive support utilities') ;
+call log_datetime ;
+
+//call sub_trace_event ('Changed SUB [DESCRIBE_QVD_FILE] removed uses of FileTime function ') ;
+//call sub_trace_event ('Common Routines code was last updated 06/20/2013')
+//call sub_trace_event ('Added SUB [generate_warning_dialog] and variables to track errors, warnings and debug code') ;
+//call sub_trace_event ('Common Routines code was last updated 06/04/2013')
+//call sub_trace_event ('Updated function [describe_qvd_file] to output last file modification date using FileTime function') ;
+//call sub_trace_event ('Common Routines code was last updated 05/13/2013');
+//call sub_trace_event ('Changes: added variable "QVW_ECS_COMMON_ROUTINES.LOG_ID" which is optional keyword/text added to each LOG line output by procedured "sub_trace_event" ') ;
+//call sub_trace_event ('also added optional parameter to procedure "sub_trace_event" to allow a custom tag to be added to that particular LOG line') ;
+//call sub_trace_event ('also added access to variable "QVW_ECS_COMMON_FUNCTIONS.output_variable_values.complete_output_text" which is populated with output generated by "output_variable_values" procedure since user code may want to output that as metadata e.g. call to procedure "add_metadata_comment_to_table"') ;
+//call sub_trace_event ('') ;
+
+///$tab Get other QVD metadata
+
+
+// ====================================================
+// get_QVD_creator_QVW
+
+sub get_QVD_creator_QVW (param_qvd_file)
+
+	// Get the Creator name (QVW name) for this QVD.
+	grab_qvw_file_that_created_qvd:
+	LOAD
+	   CreatorDoc as  QVW_that_created_the_QVD
+	FROM 
+		[$(param_qvd_file)] (XmlSimple, Table is [QvdTableHeader])
+	;
+	
+	LET get_QVD_creator_QVW.v_QVW_that_created_the_QVD = peek('QVW_that_created_the_QVD',-1);
+	
+	DROP TABLE grab_qvw_file_that_created_qvd;
+
+end sub
+// -------------------------------------------------------
+
+
+// Details are not available via functions. Load the details from the QVD XML.
+sub get_QVD_fields_additional_info (param_qvd_file)
+
+get_QVD_fields_additional_info_table_UNSORTED:
+NoConcatenate
+	LOAD 
+		//'$(File)' as "QVD Path",
+		FieldName as "QVD_field_name",	
+
+	    //BitOffset,
+	    //BitWidth,
+	    //Bias,
+	    NoOfSymbols as "QVD_field_number_of_values",
+	    //Offset,
+	    //Length,
+	    [NumberFormat/Type] as "QVD_field_type"
+	    //,
+	    //[NumberFormat/nDec] as "QVD Field Num Decimal",
+	    //[NumberFormat/UseThou] as UseThou,
+	    //[NumberFormat/Fmt] as "QVD_field_format"
+	    //[NumberFormat/Dec] as Dec,
+	    //[NumberFormat/Thou] as Thou
+	FROM 
+		[$(param_qvd_file)] (XmlSimple, Table is [QvdTableHeader/Fields/QvdFieldHeader])
+//	ORDER BY 		QVD_field_name
+	;
+		
+		
+get_QVD_fields_additional_info_table:
+NoConcatenate LOAD * RESIDENT get_QVD_fields_additional_info_table_UNSORTED ORDER BY QVD_field_name ;
+
+get_QVD_fields_additional_info_table_max_fieldname_length:
+NoConcatenate LOAD 		MAX (len(QVD_field_name)) as "QVD_field_name_max_length" RESIDENT get_QVD_fields_additional_info_table_UNSORTED ;
+
+LET get_QVD_fields_additional_info.max_fieldname_length = PEEK ('QVD_field_name_max_length', 0, 'get_QVD_fields_additional_info_table_max_fieldname_length') ;
+
+DROP TABLE get_QVD_fields_additional_info_table_UNSORTED ;
+
+
+END SUB
+
+
+// f_return_right_padded_value (text_value, pad_to_length
+Set f_return_right_padded_value = $1 & REPEAT (' ', $2 - LEN ($1))  ;
+		
+	
+// f_return_left_padded_value (text_value, pad_to_length
+Set f_return_left_padded_value = REPEAT (' ', $2 - LEN ($1)) & $1  ;
+		
+///$tab testing
+
+
+LET COMMANDLINE_QVD_FILENAME = 'V:\Projects\Claims\SUPPORT\ARCHIVE\R7P8- Hanu\CSI SP7\QVD\FACTS\CLM_OWNR_LOOKUP_OLD.QVD' ;
+///$tab Get QVD filename
+
+
+let local_COMMANDLINE_QVD_FILENAME = COMMANDLINE_QVD_FILENAME ;
+
+call output_variable_values ('COMMANDLINE_QVD_FILENAME') ;
+
+let local_COMMANDLINE_QVD_FILENAME = replace (local_COMMANDLINE_QVD_FILENAME, '%20', ' ' ) ;
+
+call output_variable_values ('local_COMMANDLINE_QVD_FILENAME') ;
+
+
+
+
+
+///$tab Get Metadata
+
+
+call describe_qvd_file (local_COMMANDLINE_QVD_FILENAME, 'Y') ;
+
+call get_QVD_creator_QVW (local_COMMANDLINE_QVD_FILENAME) ;
+
+call get_QVD_fields_additional_info (local_COMMANDLINE_QVD_FILENAME) ;
+
+///$tab Output Metadata
+
+call sub_trace_event ('') ;
+call sub_trace_event ('') ;
+call sub_trace_event ('') ;
+
+call sub_trace_event ('================================================================================') ;
+
+
+
+//call output_variable_values  ('get_QVD_creator_QVW.v_QVW_that_created_the_QVD') ;
+
+//call output_variable_values ('get_QVD_fields_additional_info.max_fieldname_length') ;
+
+IF get_QVD_fields_additional_info.max_fieldname_length < 10 then
+	let get_QVD_fields_additional_info.max_fieldname_length = 10 ;
+end if ;
+
+
+//let describe_qvd_file.filename=;
+call sub_trace_event ($(f_return_right_padded_value('File name',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.filename ) ;
+call sub_trace_event ($(f_return_right_padded_value('Table name',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.table_name ) ;
+
+
+//et describe_qvd_file.number_of_rows=;
+call sub_trace_event ($(f_return_right_padded_value('Row count',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.number_of_rows ) ;
+////let describe_qvd_file.file_last_modified=; // no need
+call sub_trace_event ($(f_return_right_padded_value('Modified',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.file_last_modified ) ;
+
+//let describe_qvd_file.file_creation =;
+call sub_trace_event ($(f_return_right_padded_value('Creation',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.file_creation ) ;
+
+//let describe_qvd_file.file_size =;
+call sub_trace_event ($(f_return_right_padded_value('File size',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.file_size ) ;
+
+//let describe_qvd_file.number_of_fields=;
+call sub_trace_event ($(f_return_right_padded_value('Fields',2+get_QVD_fields_additional_info.max_fieldname_length)) & describe_qvd_file.number_of_fields ) ;
+
+
+call sub_trace_event ('') ;
+
+call sub_trace_event ($(f_return_right_padded_value('Field Name',2+get_QVD_fields_additional_info.max_fieldname_length)) & $(f_return_left_padded_value('Count',10)) & '  ' & $(f_return_right_padded_value('Type',2+10)) & '   ' & $(f_return_left_padded_value('Unique',2+6)) ) ;
+call sub_trace_event ($(f_return_right_padded_value('----- ----',2+get_QVD_fields_additional_info.max_fieldname_length)) & $(f_return_left_padded_value('-----',10)) & '  ' & $(f_return_right_padded_value('----',2+10)) & '   ' & $(f_return_left_padded_value('------',2+6))) ;
+
+FOR v_index = 1 to describe_qvd_file.number_of_fields ;
+	
+	LET v_QVD_field_name 				= PEEK ('QVD_field_name', v_index -1, 'get_QVD_fields_additional_info_table') ;
+	LET v_QVD_field_number_of_values	= PEEK ('QVD_field_number_of_values', v_index -1, 'get_QVD_fields_additional_info_table') ;
+	LET v_QVD_field_type 				= PEEK ('QVD_field_type', v_index -1, 'get_QVD_fields_additional_info_table') ;
+	LET v_QVD_field_unique				= IF (v_QVD_field_number_of_values = describe_qvd_file.number_of_rows, 'Y', ' ') ;
+	
+	LET v_output_line = '' ;
+	let v_output_line = v_output_line & $(f_return_right_padded_value(v_QVD_field_name,get_QVD_fields_additional_info.max_fieldname_length)) & '  ' ;
+
+	let v_output_line = v_output_line & $(f_return_left_padded_value(v_QVD_field_number_of_values,10))  & '  ' ;
+	let v_output_line = v_output_line & $(f_return_right_padded_value(v_QVD_field_type,20)) & '  '  ;
+
+	let v_output_line = v_output_line & $(f_return_right_padded_value(v_QVD_field_unique,6)) & '  '  ;
+	
+	
+call sub_trace_event (v_output_line) ;
+
+		 
+NEXT v_index
+
+
+
+call sub_trace_event ('================================================================================') ;
+
+call sub_trace_event ('') ;
+call sub_trace_event ('QVD was generated by the following QVW [' & get_QVD_creator_QVW.v_QVW_that_created_the_QVD & ']' ) ;
+call sub_trace_event ('') ;
+call sub_trace_event ('') ;
+call sub_trace_event ('') ;
+
+
+///$tab Tidy Up
+let COMMANDLINE_QVD_FILENAME=; // blank it so we dont run for the same file twice
+let local_COMMANDLINE_QVD_FILENAME=; // blank it so we dont run for the same file twice
