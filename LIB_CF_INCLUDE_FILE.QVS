@@ -4,6 +4,7 @@
 03/16/2017 4:36pm
 
 
+testing the ability to auto test
 
 
 
@@ -17,9 +18,9 @@ Research use of (new) function [TextBetween] i.e. TextBetween() returns the text
 Much like new DROP TABLE(S) does a multi list command, suggest implement a DROP FIELD(S) equivelant
 make all gloval vars use [__name] instead of [.name] because debugger wont tooltip latter
 create 'sort delimited list that doesnt involve LOAD ORDER BY. must be a function  thta has a sort-weight parameter that can do it??
-expand routine to detect identical table/field names except for case and leading/trailing space differences ALSO 
+expand routine to detect identical table/field names except for case and leading/trailing space differences ALSO
 
-revisit all code that depends on SUBs that return delimited lists. I have removed the trailing delimiter from [LIB_CF_get_list_of_table_names_from_data_model] and [LIB_CF_get_table_field_names] 
+revisit all code that depends on SUBs that return delimited lists. I have removed the trailing delimiter from [LIB_CF_get_list_of_table_names_from_data_model] and [LIB_CF_get_table_field_names]
 
 GET rob's code on how to detect which charset/UNICODE a file uses. it seems CSV (from QVW) is stored using UTF8 but other sources might use different charsets
 deal with non-QVD formats in compare-table might not have field names
@@ -47,7 +48,7 @@ sub describe_last_created_table - tought to guarantee that the correct table is 
 ///$tab SUB define_custom_function_LIB_CF_RTRIM
 
 
-SUB define_custom_function_LIB_CF_RTRIM (param_ignore, local_let, local_set); 
+SUB define_custom_function_LIB_CF_RTRIM (param_ignore, local_let, local_set);
 /*
 Syntax LIB_CF_RTRIM_specific_char(text_to_replace_in,char_to_search_for)
 
@@ -66,11 +67,11 @@ This function workins like QVW standard function [RTRIM] but allows flexibility 
 
 SET LIB_CF_RTRIM = LEFT ($1, $(LIB_CF_RTRIM_length_of_that_string($1,$2)) );
 
-	//Example usage : 
-SET local_set =$(LIB_CF_RTRIM('#1','#2')); 
+	//Example usage :
+SET local_set =$(LIB_CF_RTRIM('#1','#2'));
 //TRACE LIB_CF_RTRIM has definition of : $(local_set) ;//  will output ' ABC' after having removed the 'x' characters from the right
 
-// LEFT (' ABCxx', LEN (RTRIM(REPLACE (' ABCxx','x',' ' )))  ) 
+// LEFT (' ABCxx', LEN (RTRIM(REPLACE (' ABCxx','x',' ' )))  )
 
 
 END SUB ;
@@ -80,7 +81,7 @@ END SUB ;
 
 
 
-SUB define_custom_function_LIB_CF_LTRIM (param_ignore, local_let, local_set) ; 
+SUB define_custom_function_LIB_CF_LTRIM (param_ignore, local_let, local_set) ;
 /*
 Syntax LIB_CF_LTRIM(text_to_replace_in,char_to_search_for)
 
@@ -99,8 +100,8 @@ todo - error check [char_to_search_for] is one char only (not empty or more than
 
 	SET LIB_CF_LTRIM = RIGHT ($1, $(LIB_CF_LTRIM_length_of_that_string($1,$2)) );
 
-	//Example usage : 
-	//SET local_set =$(LIB_CF_LTRIM('#1','#2')); LET local_let =$(LIB_CF_LTRIM('#1','#2')); 
+	//Example usage :
+	//SET local_set =$(LIB_CF_LTRIM('#1','#2')); LET local_let =$(LIB_CF_LTRIM('#1','#2'));
 	//TRACE LIB_CF_LTRIM has value and definition of [$(local_let)] and : $(local_set);//  will output ' ABC' after having removed the 'x' characters from the right
 
 
@@ -111,7 +112,7 @@ END SUB ;
 
 SET LIB_CF_check_table_exists_YN 				=IF ( IsNull ($1), 'N', IF ( IsNull (TableNumber($1)), 'N', 'Y' ) ) ; // EXAMPLE CALL [LET v_return_value=$(LIB_CF_table_exists_YN('table name'));
 
-SET LIB_CF_NoOfRows								=IF ( IsNull (NoOfRows($1)), 'ERROR:CALL TO [LIB_CF_NoOfRows] TABLE DOES NOT EXIST [' & $1 & ']',  NoOfRows($1)  ) ; // QVW function [NoOfRows] doesn't produce an error when supplied by bad table name. it does return a NULL. 
+SET LIB_CF_NoOfRows								=IF ( IsNull (NoOfRows($1)), 'ERROR:CALL TO [LIB_CF_NoOfRows] TABLE DOES NOT EXIST [' & $1 & ']',  NoOfRows($1)  ) ; // QVW function [NoOfRows] doesn't produce an error when supplied by bad table name. it does return a NULL.
 
 SET LIB_CF_return_fixed_length_number 			=REPEAT (' ', $2 - LEN (num($1) ) ) & num($1); // let x=$(f_return_fixed_length_number(1234, 10)); //where 1234=is the number, and 10 is the total char length of return value
 
@@ -137,10 +138,10 @@ SET LIB_CF_does_field_exist_in_data_model_YN 	=IF( IsNull (fieldvaluecount( $1 )
 
 SET LIB_CF_get_clean_connect_string 			= LEFT (ConnectString(), INDEX (ConnectString(), 'PWD')-1 );
 
-SET LIB_CF_get_username_from_OS 				= IF (INDEX (UPPER (OSuser()),'\',-1) > 0, MID (UPPER (OSuser()),INDEX (UPPER (OSuser()),'\',-1)+1, 1000), UPPER (OSuser()) ) ; // 
+SET LIB_CF_get_username_from_OS 				= IF (INDEX (UPPER (OSuser()),'\',-1) > 0, MID (UPPER (OSuser()),INDEX (UPPER (OSuser()),'\',-1)+1, 1000), UPPER (OSuser()) ) ; //
 
 // todo - LIB_CF_get_domain_from_OS : this needs work
-SET LIB_CF_get_domain_from_OS 					= IF (INDEX (UPPER (OSuser()),'\',-1) > 0, MID (UPPER (OSuser()),INDEX (UPPER (OSuser()),'\',-1)+1, 1000), UPPER (OSuser()) ) ; // 
+SET LIB_CF_get_domain_from_OS 					= IF (INDEX (UPPER (OSuser()),'\',-1) > 0, MID (UPPER (OSuser()),INDEX (UPPER (OSuser()),'\',-1)+1, 1000), UPPER (OSuser()) ) ; //
 
 SET LIB_CF_get_user_my_documents_folder 		= GetRegistryString('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders','Personal')  ; // "Desktop" is another good key
 
@@ -192,41 +193,41 @@ key 	= 'Windows'
 Example usage:
 let x= $(f_get_registry_string('HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\SubSystems','Windows')) ;
 */
-SET LIB_CF_get_registry_string=GETREGISTRYSTRING($1, $2) ; // PATH AND 
+SET LIB_CF_get_registry_string=GETREGISTRYSTRING($1, $2) ; // PATH AND
 
 ///$tab LIB_CF_add_metadata_comment_to_table
 // constructs metadata about QVW session and table and replaces the table's comments with it
 // typically used just before a table is stored in a QVD file
 // NOTE: The COMMENT TABLE command associates the comment with the table name and not the table itself i.e. if the table is renamed the comment is still associated with the original table name
-// NOTE: To see the comment use TABLE VIEWER 
+// NOTE: To see the comment use TABLE VIEWER
 // param_table_name= name of valid table
 // param_custom_metadata = additional text supplied that is included with metadata
 
 // todo - may want to have user code call this with value of varable [QVW_Common_Functions.output_variable_values.complete_output_text] to populate [ param_custom_metadata]
 
 
-sub LIB_CF_add_metadata_comment_to_table (param_table_name, param_custom_metadata, /* local variables */ local_qvw_metadata_comment, local_CR, local_field_index, local_field_name_list) 
+sub LIB_CF_add_metadata_comment_to_table (param_table_name, param_custom_metadata, /* local variables */ local_qvw_metadata_comment, local_CR, local_field_index, local_field_name_list)
 
 	let LIB_CF_add_metadata_comment_to_table.metadata_text =; // by default return NULL
-	
+
 	if $(LIB_CF_does_table_exist_YN(param_table_name)) <> 'Y' THEN ;
-	
+
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_add_metadata_comment_to_table] was givem invalid table name [$(param_table_name)]') ;
-		
+
 		EXIT SUB ; // cannot update comment since table doesnt exist
-		
-	END IF 
-	
+
+	END IF
+
 	let local_CR = chr(13) ;
-	
+
 	call  LIB_CF_get_table_field_names (param_table_name, 'N') ;
 	let local_field_name_list = LIB_CF_get_table_field_names.field_names ;
-	
+
 	// build metadata string
-	let local_qvw_metadata_comment = 
-	'** Auto generated metadata **' & local_CR & 
-	'** To see this metadata in QVW hover over table in Table Viewer. When loading from a QVD LOAD table must be named as table name below for COMMENTs to be displayed. QVW associates COMMENTs with table names and not the table or the QVD itself **' & local_CR & 
-	param_custom_metadata & local_CR & 
+	let local_qvw_metadata_comment =
+	'** Auto generated metadata **' & local_CR &
+	'** To see this metadata in QVW hover over table in Table Viewer. When loading from a QVD LOAD table must be named as table name below for COMMENTs to be displayed. QVW associates COMMENTs with table names and not the table or the QVD itself **' & local_CR &
+	param_custom_metadata & local_CR &
 	''  & local_CR &
 	'Timestamp      [' & Now(1) & ']  ' & local_CR &
 	''  & local_CR &
@@ -244,16 +245,16 @@ sub LIB_CF_add_metadata_comment_to_table (param_table_name, param_custom_metadat
 	'[Number of rows =' & NoOfRows(param_table_name) & ']  ' & local_CR &
 	'[Number of fields =' & NoOfFields(param_table_name) & ']  ' & local_CR &
 	'[Field names =' & local_field_name_list & ']  ' & local_CR &
-	'' 
+	''
 	;
-	
-	
+
+
 	call LIB_CF_trace ('SUB [LIB_CF_add_metadata_comment_to_table] added metadata comment to table [$(param_table_name)] ') ; //using the following text:' & v_CR & local_v_qvw_metdata_comment) ;
-	
-	
+
+
 	COMMENT TABLE [$(param_table_name)] WITH '$(local_qvw_metdata_comment)' ;
-	
-	
+
+
 	let LIB_CF_add_metadata_comment_to_table.metadata_text = local_qvw_metadata_comment ;
 
 END SUB
@@ -267,10 +268,10 @@ END SUB
 // 1. ensuring incremental history files are kept in  synch (since they are usually keyed on a unique field or combination of fields)
 // 2. helping confirm that join field(s) are unique for checking cardinalities
 //
-// Use this function often to prove that DELTA, INCREMENTAL, DELETES or any other tranaction impacting a table are detected and maintained uniquely 
-// 
-// TECHNICAL NOTES: 
-// This procedures uses other functions to dynamically determine which method to use to detect uniqueness. 
+// Use this function often to prove that DELTA, INCREMENTAL, DELETES or any other tranaction impacting a table are detected and maintained uniquely
+//
+// TECHNICAL NOTES:
+// This procedures uses other functions to dynamically determine which method to use to detect uniqueness.
 // One method is very fast (using QVW built-in functions) and the other uses LOAD RESIDENT to a temoprary table which can be slower on large tables
 
 sub LIB_CF_check_key_fields_of_table_remain_unique (param_table_name, param_key_field_name_list /* local vars */ ,local_response_YN, local_param_table_name, local_param_key_field_name_list, local_param_key_field_name_list_formatted, local_list_of_fields_in_target_table,local_param_key_field_name_list_count,local_key_field_name )
@@ -282,57 +283,57 @@ sub LIB_CF_check_key_fields_of_table_remain_unique (param_table_name, param_key_
 	LET local_param_key_field_name_list 		= param_key_field_name_list ;
 	LET local_param_key_field_name_list 		= REPLACE (local_param_key_field_name_list, ',', ';') ;
 	LET local_param_key_field_name_list_count 	= SubStringCount (if (RIGHT (local_param_key_field_name_list,1) <> ';', local_param_key_field_name_list & ';' , ), ';' );
-	
+
 	//call LIB_CF_output_variable_value ('local_param_table_name');
-		
+
 	// check table exists
 	IF $(LIB_CF_does_table_exist_YN(local_param_table_name)) <> 'Y' THEN ;
 
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_check_tables_key_fields_remain_unique] table doesnt exist [$(local_param_table_name)]' ) ;
 		EXIT SCRIPT;
-		
+
 	END IF ;
-	
+
 	CALL LIB_CF_get_table_field_names (local_param_table_name);
 	LET local_list_of_fields_in_target_table =  LIB_CF_get_table_field_names.field_names ;
-	
+
 	// compare those field names to the parameter list
 	CALL LIB_CF_compare_two_delimited_lists (local_list_of_fields_in_target_table, local_param_key_field_name_list); // todo - changing delimiter to be fixed at ';'
-	
+
 	IF LIB_CF_compare_two_delimited_lists__list_2_only_count <> 0 THEN ;
 		// if there are fields in 2nd list (i.e. keys) but arent in table then incorrect fields have been passed
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_check_tables_key_fields_remain_unique] table [$(local_param_table_name)] does not contain the following fields [$(LIB_CF_compare_two_delimited_lists__list_2_only)]' ) ;
 		EXIT SCRIPT;
-		
+
 	END IF ;
-	
-	// if there are zero or one rows then the fields values must be unique 
-	IF NoOfRows(param_table_name) <= 1 THEN 
-		
+
+	// if there are zero or one rows then the fields values must be unique
+	IF NoOfRows(param_table_name) <= 1 THEN
+
 		LET LIB_CF_check_tables_key_fields_remain_unique.response_YN =  'Y';
 		//call LIB_CF_trace ( 'SUB [LIB_CF_check_tables_key_fields_remain_unique] uniqueness cannot be checked if there are less than 2 rows in table [$(param_table_name)]' );
 		EXIT SUB ; // prematurely skip to end of SUB
-		
+
 	END IF ;
 
 	// if there is only one key field provided then certain optimizations can be applied
 	if local_param_key_field_name_list_count = 1 THEN
-		
-		LET local_key_field_name = REPLACE (local_param_key_field_name_list, ';', ''); 
+
+		LET local_key_field_name = REPLACE (local_param_key_field_name_list, ';', '');
 		CALL LIB_CF_is_field_name_unique_to_table (local_param_table_name, local_key_field_name) ;
 		IF LIB_CF_is_field_name_unique_to_table__response = 'Y' THEN ;
-		
+
 			// if number of fields is 1 (one) and the field name is unique to the target table use FIELDVALUECOUNT
 			IF FieldValueCount(local_key_field_name) = NoOfRows(local_param_table_name) THEN ;
 				LET local_response_YN = 'Y' ;
 			ELSE
 				LET local_response_YN = 'N' ;
 			END IF ;
-			
+
 		ELSE
 			// if number of fields is 1 (one) and the field name is NOT unique to the target table use LOAD into new table and then FIELDVALUECOUNT
-			LIB_CF_check_key_fields_of_table_remain_unique.table_name_TEMP: 
-			NoConcatenate	
+			LIB_CF_check_key_fields_of_table_remain_unique.table_name_TEMP:
+			NoConcatenate
 			LOAD
 				$(local_key_field_name) as LIB_CF_check_key_fields_of_table_remain_unique.$(local_key_field_name)
 			RESIDENT
@@ -346,21 +347,21 @@ sub LIB_CF_check_key_fields_of_table_remain_unique (param_table_name, param_key_
 			drop table LIB_CF_check_key_fields_of_table_remain_unique.table_name_TEMP ;
 
 		END IF ;
-	
+
 	ELSE // there are more than one key field so we have to generate new unique field route and then use FieldValueCount and NoOfRows on it
-	
+
 		//CALL LIB_CF_trace ('TODO- get back to this to handle multi field key');
 		//LET local_response_YN = 'TODO- get back to this to handle multi field key';
-		
+
 		LET local_param_key_field_name_list_formatted = local_param_key_field_name_list;
 		LET local_param_key_field_name_list_formatted = IF (RIGHT (local_param_key_field_name_list_formatted,1) = ';', LEFT (local_param_key_field_name_list_formatted, LEN(local_param_key_field_name_list_formatted)-1), local_param_key_field_name_list_formatted);
 		LET local_param_key_field_name_list_formatted = IF (LEFT (local_param_key_field_name_list_formatted,1) = ';', RIGHT (local_param_key_field_name_list_formatted, LEN(local_param_key_field_name_list_formatted)-1), local_param_key_field_name_list_formatted);
-		
+
 		LET local_param_key_field_name_list_formatted = '[' & REPLACE (local_param_key_field_name_list_formatted, ';', '] & [') & ']';
-		
-		
-		LIB_CF_check_key_fields_of_table_remain_unique.table_name_TEMP: 
-		NoConcatenate	
+
+
+		LIB_CF_check_key_fields_of_table_remain_unique.table_name_TEMP:
+		NoConcatenate
 		LOAD
 			$(local_param_key_field_name_list_formatted) as LIB_CF_check_key_fields_of_table_remain_unique.field_name
 		RESIDENT
@@ -372,12 +373,12 @@ sub LIB_CF_check_key_fields_of_table_remain_unique (param_table_name, param_key_
 			let local_response_YN = 'N' ;
 		end if  ;
 		drop table LIB_CF_check_key_fields_of_table_remain_unique.table_name_TEMP ;
-			
-		
+
+
 	END IF  ; // if local_param_key_field_name_list_count = 1 THEN
-	
+
 	LET LIB_CF_check_key_fields_of_table_remain_unique.response_YN = local_response_YN;
-	
+
 	call LIB_CF_output_variable_values ('LIB_CF_check_key_fields_of_table_remain_unique.response_YN');
 
 end sub ;
@@ -386,25 +387,25 @@ end sub ;
 sub LIB_CF_describe_table_detailed_profiling (param_table_name, param_field_names_list, param_field_names_list_count /* local vars */ , local_param_table_name, local_param_field_names_list, local_field_index_padded, local_field_load_template_running, local_param_field_names_list_count, local_field_index, local_field_name, local_field_load_template, local_detailed_table_name )
 
 	// TODO - investigate local params or variables not being released
-	
-	
+
+
 	// param to local
 	LET local_param_table_name 						= param_table_name ;
 	LET local_param_field_names_list 				= param_field_names_list ;
 	LET local_param_field_names_list_count 			= param_field_names_list_count ;
-	
-	
+
+
 	let local_detailed_table_name 					= 'LIB_CF_describe_table_detailed_profiling.UNIQUE_TABLE_NAME';
 	LET local_field_load_template 					= '' ;
 	LET local_field_load_template_running			= '	1 ';//	CONSTANT_NEEDED_BY_GROUP_BY ';
-	
+
 	FOR local_field_index = 1 TO local_param_field_names_list_count STEP 1 ;
-	
+
 		LET local_field_index_padded = $(LIB_CF_return_fixed_length_zero_padded(local_field_index, 3));
-		
+
 		LET local_field_name 		= SubField (local_param_field_names_list, ';', local_field_index) ;
 
-	
+
 		SET local_field_load_template =
 			,
 			MissingCount	( [$(local_field_name)] ) 	as [MissingCount.$(local_field_index_padded)]
@@ -414,7 +415,7 @@ sub LIB_CF_describe_table_detailed_profiling (param_table_name, param_field_name
 			TextCount 		( [$(local_field_name)] ) 	as [TextCount.$(local_field_index_padded)]
 			,
 			NumericCount 	( [$(local_field_name)] ) 	as [NumericCount.$(local_field_index_padded)]
-			
+
 			// probably wont use these MIN/MAX ones
 			,
 			MAX 	( [$(local_field_name)] ) 			as [Max.$(local_field_index_padded)]
@@ -431,38 +432,38 @@ sub LIB_CF_describe_table_detailed_profiling (param_table_name, param_field_name
 		//call LIB_CF_output_variable_values ('local_field_load_template_running');
 
 	NEXT local_field_index ;
-	
-	
+
+
 	//EXIT SCRIPT;
 	QUALIFY * ;
-	
+
 	$(local_detailed_table_name):
 	NOCONCATENATE
-	LOAD 
+	LOAD
 		// CONSTANT_NEEDED_BY_GROUP_BY and COMMA supplied by text manip above
 
 		$(local_field_load_template_running)
-		
+
 	RESIDENT
-	
-		'$(local_param_table_name)' 
-	
+
+		'$(local_param_table_name)'
+
 //	GROUP BY 	 	CONSTANT_NEEDED_BY_GROUP_BY // you do not need a GROUP BY. woohoo!
 	;
-	
+
 	UNQUALIFY * ;
-	
+
 	DROP FIELD '$(local_detailed_table_name).1' FROM '$(local_detailed_table_name)';
-	 
+
 	//DROP TABLE 'local_detailed_table_name' ;
-	
-	
-	
+
+
+
 	// todo - return values for each field, somehow?
-	
+
 	LET LIB_CF_describe_table_detailed_profiling__profile_table_name = local_detailed_table_name ;
-	
-	
+
+
 END SUB ; // LIB_CF_describe_table_detailed_profiling
 
 
@@ -479,24 +480,24 @@ SUB LIB_CF_describe_table  (param_table_name,  param_detailed_profiling_YN /* LO
 
 
 	LET local_param_sort_fields_YN = TRIM (UPPER (param_detailed_profiling_YN));
-	IF ISNULL (local_param_sort_fields_YN) 		THEN ; 
-		LET local_param_sort_fields_YN = 'N' ; 
+	IF ISNULL (local_param_sort_fields_YN) 		THEN ;
+		LET local_param_sort_fields_YN = 'N' ;
 	ELSE
 		//LET local_param_sort_fields_YN = param_sort_fields_YN;
 	END IF ;
 
 	// param_detailed_profiling_YN : will determine if data value counts are for table and not across the whole data model (will take more time but be more accurate)
 	LET local_param_detailed_profiling_YN = TRIM (UPPER (param_detailed_profiling_YN));
-	IF ISNULL (local_param_detailed_profiling_YN) THEN ; 
-		//LET param_detailed_profiling_YN = 'N'; 
+	IF ISNULL (local_param_detailed_profiling_YN) THEN ;
+		//LET param_detailed_profiling_YN = 'N';
 		LET local_param_detailed_profiling_YN = 'N';
 	ELSE
 		//LET local_param_detailed_profiling_YN = param_detailed_profiling_YN ;
 	END IF ;
-	
+
 	// CONSTANTS
 	//LET LIB_CF_C_DELIMITER_SEMICOLON = ';' ;
-	
+
 	// GLOBAL VARIABLES THAT CALLING CODE CAN USE. I COULD HAVE USED 'BYREF' BUT THAT WOULD HAVE REQUIRED CALLING CODE TO HAVE TOO MUCH SET UP
 	LET LIB_CF_describe_tables.table_name 		=;
 	LET LIB_CF_describe_tables.number_of_rows 	=;
@@ -510,38 +511,38 @@ SUB LIB_CF_describe_table  (param_table_name,  param_detailed_profiling_YN /* LO
 //trace Call to SUB [describe_table] with parameter [param_table_name] of value [$(param_table_name)] ;
 
 	if $(LIB_CF_check_table_exists_YN(param_table_name)) <> 'Y' then
-	
+
 		call LIB_CF_generate_fatal_error ('Procedure [describe_table] has been passed an invalid table name [$(param_table_name)]') ;
 		EXIT SUB ;
 
 	ELSE
-	
+
 		call LIB_CF_get_table_field_names (param_table_name, local_param_sort_fields_YN) ;
 		LET local_field_name_list 						= LIB_CF_get_table_field_names.field_names;
-		
-		let local_number_of_rows 		= NoOfRows('$(param_table_name)') ; 
-		let local_number_of_fields 		= NoOfFields('$(param_table_name)') ; 
-		let local_table_number 			= 1+TableNumber('$(param_table_name)') ; 
+
+		let local_number_of_rows 		= NoOfRows('$(param_table_name)') ;
+		let local_number_of_fields 		= NoOfFields('$(param_table_name)') ;
+		let local_table_number 			= 1+TableNumber('$(param_table_name)') ;
 		let local_number_of_tables 		= NoOfTables() ;
 
 
-		IF local_param_detailed_profiling_YN = 'Y' THEN ; 
-			
+		IF local_param_detailed_profiling_YN = 'Y' THEN ;
+
 			QUALIFY * ; // TODO - THERE IS A RISK THAT THE CALLING CODE HAD ACTIVE QUALIFY COMMAND AND THIS JUST MESSED IT UP. SAFER CODE WOULD BE A LOAD param_table_name.fieldname syntax
 			LIB_CF_describe_table.UNIQUE_TABLE_NAME:
 			NOCONCATENATE
-			LOAD 
+			LOAD
 				*
-			RESIDENT 
+			RESIDENT
 				'$(param_table_name)'
 			;
 			UNQUALIFY * ;
-		
+
 			call  LIB_CF_describe_table_detailed_profiling (param_table_name, local_field_name_list, local_number_of_fields );
 			LET local_profiling_table_name = LIB_CF_describe_table_detailed_profiling__profile_table_name ;
-			
+
 			//exit script;
-		
+
 		END IF ;
 
 
@@ -551,43 +552,43 @@ SUB LIB_CF_describe_table  (param_table_name,  param_detailed_profiling_YN /* LO
 		call LIB_CF_trace ('Describe table [$(param_table_name)] contains [rows='& num (local_number_of_rows, '###,###,###,###') & ']  [fields=$(local_number_of_fields)]  [table $(local_table_number) of $(local_number_of_tables)]') ;
 		call LIB_CF_trace ('') ; // force a blank line
 
-		IF local_param_detailed_profiling_YN = 'Y' THEN ; 
-			call LIB_CF_trace ('          Num     Count  Key     Empty    Null    Text  Numeric   FieldName ') ; // force a blank line					
+		IF local_param_detailed_profiling_YN = 'Y' THEN ;
+			call LIB_CF_trace ('          Num     Count  Key     Empty    Null    Text  Numeric   FieldName ') ; // force a blank line
 		ELSE
-			call LIB_CF_trace ('          Num     Count  Key      FieldName') ; // force a blank line					
+			call LIB_CF_trace ('          Num     Count  Key      FieldName') ; // force a blank line
 		END IF ;
-		
-		
+
+
 		LET local_is_field_name_a_key_field_count		= 0 ;
 		LET local_count_is_unique_to_field_table_count	= 0;
-		
-	
-	
-	
-	
+
+
+
+
+
 		FOR local_field_index = 1 to local_number_of_fields STEP 1 ;
-			
+
 			LET local_field_name 			= SUBFIELD (local_field_name_list, ';' , local_field_index) ; LET local_len_field_name = LEN(local_field_name) ;
-			
-		
+
+
 			call LIB_CF_is_field_name_unique_to_table (param_table_name, local_field_name) ;
 			LET local_is_field_name_a_key_field = IF (LIB_CF_is_field_name_unique_to_table__response = 'Y', 'n', 'Y'); // reverse logic to indicate if its a KEY field
 			IF local_is_field_name_a_key_field = 'Y' THEN ;
 				LET local_is_field_name_a_key_field_count = local_is_field_name_a_key_field_count+ 1 ;
 			END IF ;
-			
+
 
 			IF local_param_detailed_profiling_YN = 'Y' THEN ;
 				LET local_field_value_count 	= FieldValueCount ('LIB_CF_describe_table.UNIQUE_TABLE_NAME.' & local_field_name) ; // if doing detailed then prefix fieldname with unique table name
-			
+
 				LET local_count_is_unique_to_field_table = ' ';
 
-			ELSE 
-				
+			ELSE
+
 				LET local_field_value_count 	= FieldValueCount (local_field_name) ; // if doing detailed then prefix fieldname with unique table name
-			
+
 				if local_is_field_name_a_key_field = 'Y' then ;
-					LET local_count_is_unique_to_field_table = '*'; LET local_count_is_unique_to_field_table_count = local_count_is_unique_to_field_table_count + 1; 
+					LET local_count_is_unique_to_field_table = '*'; LET local_count_is_unique_to_field_table_count = local_count_is_unique_to_field_table_count + 1;
 				ELSE
 					LET local_count_is_unique_to_field_table = ' ';
 				END IF ;
@@ -604,15 +605,15 @@ SUB LIB_CF_describe_table  (param_table_name,  param_detailed_profiling_YN /* LO
 			LET local_formatted_output = local_formatted_output & local_is_field_name_a_key_field ;
 			LET local_formatted_output = local_formatted_output & ' | ' ;
 
-			
+
 			IF local_param_detailed_profiling_YN = 'Y' THEN ;
 				//, local_profiling_table_name,  local_profiling_field_name,local_profiling_field_value
-				
+
 				LET local_profiling_field_name = local_profiling_table_name & '.MissingCount.' & NUM (local_field_index, '000') ;
 				LET local_profiling_field_value = PEEK ( local_profiling_field_name , 0, local_profiling_table_name);
 				LET local_profiling_field_value = $(LIB_CF_return_fixed_length_left_padded(local_profiling_field_value,8)) ;
 				LET local_formatted_output = local_formatted_output & local_profiling_field_value ;
-				
+
 				LET local_profiling_field_name = local_profiling_table_name & '.NullCount.' & NUM (local_field_index, '000') ;
 				LET local_profiling_field_value = PEEK ( local_profiling_field_name , 0, local_profiling_table_name);
 				LET local_profiling_field_value = $(LIB_CF_return_fixed_length_left_padded(local_profiling_field_value,8)) ;
@@ -632,32 +633,32 @@ SUB LIB_CF_describe_table  (param_table_name,  param_detailed_profiling_YN /* LO
 
 				//call LIB_CF_output_variable_values ('local_field_index, local_field_name, local_profiling_field_name,local_profiling_field_value');
 			END IF ;
-			
+
 			LET local_formatted_output = local_formatted_output &  '    ';
 			LET local_formatted_output = local_formatted_output & local_field_name  ;
-			
-			CALL LIB_CF_trace (local_formatted_output);		
+
+			CALL LIB_CF_trace (local_formatted_output);
 			//call LIB_CF_trace ('        ' & NUM(local_field_index, '000') & ' : ' & $(LIB_CF_return_fixed_length_number(local_field_value_count,10)) & local_count_is_unique_to_field_table & '   :   ' & local_is_field_name_a_key_field & '   :  ' &local_field_name ) ;// & REPEAT (' ', 40- local_len_field_name) & '$(local_field_value_count)') ;
-			
+
 		NEXT local_field_index;
-	
+
 		DROP TABLE '$(local_profiling_table_name)';
-		 
-		IF local_param_detailed_profiling_YN = 'Y' then ; 
+
+		IF local_param_detailed_profiling_YN = 'Y' then ;
 			DROP TABLE 'LIB_CF_describe_table.UNIQUE_TABLE_NAME' ;
 		END IF ;
-			
-	
+
+
 		IF local_count_is_unique_to_field_table_count > 0 THEN
 		call LIB_CF_trace ('');
 			call LIB_CF_trace ('  "Count*" represents the data value count across all uses of the key field name in the data model (and not just on the target table)');
-		
+
 		END IF ;
-		
-		call LIB_CF_trace (''); 
-	
+
+		call LIB_CF_trace ('');
+
 		call LIB_CF_tablename_has_potential_duplicate_in_model_YN (param_table_name) ; // check for bad ones
-		
+
 	end if ;
 
 
@@ -669,7 +670,7 @@ SUB LIB_CF_describe_table  (param_table_name,  param_detailed_profiling_YN /* LO
 	LET LIB_CF_describe_tables.number_of_tables	= local_number_of_tables;
 	LET LIB_CF_describe_tables.field_names		=;
 	LET LIB_CF_describe_tables.has_potential_duplicate_in_model_YN =;
-	
+
 end sub ;
 
 ///$tab LIB_CF_describe_qvd_file
@@ -680,30 +681,30 @@ sub LIB_CF_get_QVD_creator_QVW (param_qvd_file /* local vars */ )
 
 	// RETURN global variables
 	LET LIB_CF_get_QVD_creator_QVW__return_value =;
-	
+
 	IF $(LIB_CF_does_file_exist_YN(param_qvd_file)) = 'Y' THEN ;
-		
+
 		// Get the Creator name (QVW name) for this QVD.
 		LIB_CF_get_QVD_creator_QVW.TABLE_NAME:
 		NOCONCATENATE
 		LOAD
 		   CreatorDoc as  QVW_that_created_the_QVD
-		FROM 
+		FROM
 			[$(param_qvd_file)] (XmlSimple, Table is [QvdTableHeader])
 		;
-		
+
 		LET LIB_CF_get_QVD_creator_QVW__return_value = PEEK('QVW_that_created_the_QVD',0, 'LIB_CF_get_QVD_creator_QVW.TABLE_NAME');
-		
+
 		DROP TABLE 'LIB_CF_get_QVD_creator_QVW.TABLE_NAME';
 
 	ELSE
 		// TODO - fatal?
 		LET LIB_CF_get_QVD_creator_QVW__return_value = 'SUB [LIB_CF_get_QVD_creator_QVW] file does not exist : $(param_qvd_file)' ;
-		
+
 	END IF ;
-	
+
 	//call LIB_CF_output_variable_values ('LIB_CF_get_QVD_creator_QVW__return_value');
-	
+
 end sub
 // -------------------------------------------------------
 
@@ -714,17 +715,17 @@ sub LIB_CF_get_QVD_fields_additional_info (param_qvd_file /* local vars */ )
 
 	// TODO - this proc is not used yet but should be called by [LIB_CF_describe_qvd_file] to provide field value count of each field
 	LIB_CF_get_QVD_fields_additional_info.TABLE_NAME:
-	//MAPPING 
-	LOAD 
-		FieldName 		as "QVD_field_name",	
+	//MAPPING
+	LOAD
+		FieldName 		as "QVD_field_name",
 	    NoOfSymbols 	as "QVD_field_number_of_distinct_values",
 	    '[' & FieldName & ']' & '=' & '[' & NoOfSymbols & ']' AS FIELD_EQUALS_COUNT
-	FROM 
+	FROM
 		[$(param_qvd_file)] (XmlSimple, Table is [QvdTableHeader/Fields/QvdFieldHeader])
 	;
-	
+
 	// TODO - DECIDE HOW TO RETURN AND USE THIS IN THE CALLING CODE
-		
+
 
 END SUB ;
 
@@ -741,15 +742,15 @@ essentially if its a QVD then it will get more info
 // ========================================================================================================================
 // todo-get other metadata e.g. distinct value count (see QLIKDEV SAN \SUPPORT\Utilities (official versions)\Get QVD Metadata\Get_QVD_Metadata.qvw for code examples
 // todo - i removed param  [ param_optional_get_fields_yn]. was this wise? made it auto show fields
-// todo - it should deliver [field1;field2] representing 2 fields and NOT [field1;field2;] (note the trailing semi colon). once fixed I may need to fix dependent procs e.g. LIB_CF_describe_file, LIB_CF_store_table_in_qvd, 
+// todo - it should deliver [field1;field2] representing 2 fields and NOT [field1;field2;] (note the trailing semi colon). once fixed I may need to fix dependent procs e.g. LIB_CF_describe_file, LIB_CF_store_table_in_qvd,
 
 Sub LIB_CF_describe_qvd_file (param_qvd_file  /* local variables */ ,  local_field_name, local_field_index, local_field_names, local_filename, local_qvd_number_of_records, local_qvd_datetime, local_filesize, local_qvd_table_name, local_qvd_number_of_fields, local_field_names )
 
 //	// param_optional_identifier  if this is set, its used to add an identifier to the global variables returned to help the calling code separate different variabales for each QVD. optional and not expected to be used often
 //	IF IsNull(param_optional_identifier) 	THEN ; let param_optional_identifier=''; END IF;
 //	IF IsNull(param_optional_get_fields_yn) THEN ; let param_optional_get_fields_yn=''; END IF;
-//	
-	
+//
+
 	// todo revisit
 	// global vars that will be returned by this proc in case calling code needs them
 	let LIB_CF_describe_qvd_file.number_of_rows		=;
@@ -761,23 +762,23 @@ Sub LIB_CF_describe_qvd_file (param_qvd_file  /* local variables */ ,  local_fie
 	let LIB_CF_describe_qvd_file.field_names 		=;
 	LET LIB_CF_describe_qvd_file.folder				=;
 	LET LIB_CF_describe_qvd_file.creator_qvw		=;
-		
-	
+
+
 	IF $(LIB_CF_does_file_exist_YN(param_qvd_file)) = 'Y' THEN
-	
-	
+
+
 		CALL LIB_CF_get_QVD_creator_QVW (param_qvd_file) ;
 		LET LIB_CF_describe_qvd_file.creator_qvw 		= LIB_CF_get_QVD_creator_QVW__return_value ;
-		
+
 		let LIB_CF_describe_qvd_file.number_of_rows 	= num (QvdNoOfRecords( '$(param_qvd_file)' ), '###,###,###,###');
 		let LIB_CF_describe_qvd_file.file_modified 		= QvdCreateTime( '$(param_qvd_file)' );
 		let LIB_CF_describe_qvd_file.file_size 			= num ( FileSize(param_qvd_file), '###,###,###,###') ;
 		let LIB_CF_describe_qvd_file.table_name 		= QvdTableName( '$(param_qvd_file)' ) ;
 		let LIB_CF_describe_qvd_file.number_of_fields 	= QvdNoOfFields( '$(param_qvd_file)' ) ;
-		
+
 		let LIB_CF_describe_qvd_file.filename 			= $(LIB_CF_get_just_the_filename(param_qvd_file));
 		let LIB_CF_describe_qvd_file.folder 			= $(LIB_CF_get_just_the_folder(param_qvd_file));
-		
+
 		call LIB_CF_output_double_line;
 		call LIB_CF_trace ('') ;
 		call LIB_CF_trace ('QVD                : $(LIB_CF_describe_qvd_file.filename)') ;
@@ -788,41 +789,41 @@ Sub LIB_CF_describe_qvd_file (param_qvd_file  /* local variables */ ,  local_fie
 		call LIB_CF_trace ('Number of rows     : [$(LIB_CF_describe_qvd_file.number_of_rows)]') ;
 		call LIB_CF_trace ('Last modified      : [$(LIB_CF_describe_qvd_file.file_modified)]') ;
 		call LIB_CF_trace ('QVD file size      : [$(LIB_CF_describe_qvd_file.file_size) bytes]') ;
-		
-		
-		
+
+
+
 		//call LIB_CF_trace ('QVD contains [table=$(LIB_CF_describe_qvd_file.table_name)]  [fields=$(LIB_CF_describe_qvd_file.number_of_fields)]  [rows=$(LIB_CF_describe_qvd_file.number_of_rows)]  [modified=$(LIB_CF_describe_qvd_file.file_modified)] [size=$(LIB_CF_describe_qvd_file.file_size) bytes]  file=$(param_qvd_file)' ) ;
 
-		
+
 		//if UPPER (param_optional_get_fields_yn) = 'Y' THEN ; // just output field names all the time
 
-		call LIB_CF_get_qvd_field_names (param_qvd_file, 'N') ;  // 'N' MEANS DO NOT SORT. THE SEQUENCE OF FIELD NAMES MUST MATCH QVD SEQUENCE SINCE 
+		call LIB_CF_get_qvd_field_names (param_qvd_file, 'N') ;  // 'N' MEANS DO NOT SORT. THE SEQUENCE OF FIELD NAMES MUST MATCH QVD SEQUENCE SINCE
 			let LIB_CF_describe_qvd_file.field_names 			= LIB_CF_get_qvd_field_names.field_names_list ;
 			call LIB_CF_trace ('');
 			call LIB_CF_trace ('Num  Fieldname') ;
 			call LIB_CF_trace ('---  ---------') ;
-		
+
 		FOR local_field_index = 1 to LIB_CF_describe_qvd_file.number_of_fields STEP 1 ;
-		
+
 			LET local_field_name = SUBFIELD (LIB_CF_describe_qvd_file.field_names, ';', local_field_index) ;
-			
+
 			//call sub_trace_event ('            ' & local_field_name) ; // DELETED
 			call LIB_CF_trace ( NUM(local_field_index, '000') & '  ' & local_field_name) ; // added
-			
-			
+
+
 		NEXT local_field_index ;
-		
+
 		call LIB_CF_output_single_line;
-		
+
 	//END IF;
-		
-	
+
+
 	ELSE
-		
+
 		call LIB_CF_generate_fatal_error ('Procedure [describe_qvd_file] QVD file doesnt exist [$(param_qvd_file)]' ) ;
 		EXIT SCRIPT;
-		
-	END IF 
+
+	END IF
 
 end sub ;
 
@@ -836,15 +837,15 @@ SUB LIB_CF_describe_file (param_file /* local vars */ , local_file_extension) ;
 
 
 	IF $(LIB_CF_does_file_exist_YN(param_file)) = 'Y' THEN ;
-	
+
 		LET local_file_extension = UPPER (TRIM ($(LIB_CF_get_just_the_extension(param_file)) )) ;
-		
-		IF local_file_extension = 'QVD' THEN 
-		
+
+		IF local_file_extension = 'QVD' THEN
+
 			CALL LIB_CF_describe_qvd_file (param_file) ;
-		
-		else 
-			
+
+		else
+
 			//CALL LIB_CF_trace ('generic file');
 
 			let LIB_CF_describe_file.file_modified 		= FileTime( '$(param_file)' );
@@ -853,7 +854,7 @@ SUB LIB_CF_describe_file (param_file /* local vars */ , local_file_extension) ;
 			let LIB_CF_describe_file.number_of_fields 	=  ;
 			let LIB_CF_describe_file.filename 			= $(LIB_CF_get_just_the_filename(param_file));
 			let LIB_CF_describe_file.folder 			= $(LIB_CF_get_just_the_folder(param_file));
-			
+
 			call LIB_CF_output_double_line;
 			call LIB_CF_trace ('') ;
 			call LIB_CF_trace ('File     : $(LIB_CF_describe_file.filename)' ) ;
@@ -862,178 +863,178 @@ SUB LIB_CF_describe_file (param_file /* local vars */ , local_file_extension) ;
 			call LIB_CF_trace ('Size     : $(LIB_CF_describe_file.file_size)' ) ;
 			call LIB_CF_output_single_line;
 
-		
+
 		end if ;
-		
-		
+
+
 	ELSE
-	
+
 		call LIB_CF_generate_fatal_error ('Procedure [LIB_CF_describe_file] file doesnt exist [$(param_file)]' ) ;
 		EXIT SCRIPT;
-	
-	
+
+
 	END IF ;
-	
-	
+
+
 END SUB ;
 ///$tab LIB_CF_describe_tables_detailed_list
 sub LIB_CF_describe_tables_detailed_list ( param_eventually_this_will_be_a_tablename_list_or_wildcard , /* local vars */ local_maximum_display_field_length, local_length_table_name, local_number_of_tables, local_field_name, local_table_name, local_table_index, local_max_length_numeric_output,local_max_length_table_name,local_table_names_delimited_list,local_count_tables_with_zero_rows,local_formatted_table_name_header,local_formatted_number_of_rows_header,local_formatted_number_of_fields_header,local_formatted_output_header,local_number_of_rows,local_number_of_fields,local_field_name_list,local_formatted_table_name,local_formatted_number_of_rows,local_formatted_number_of_fields,local_formatted_table_field_names,local_formatted_output_detail,local_distinct_field_list,local_field_index,local_distinct_fieldvalue_count); // todo - will accept '*' or no param to represent 'all tables' or supply comma delimited list
 
 // todo - accept table name list or wildcard
 // todo - show synthetic keys warning either across whole data model or on a table-by-table basis
-// 
+//
 
-	
+
 	LET local_max_length_numeric_output = 11 ;
-	
+
 	let local_number_of_tables = Nooftables() ;
-	
+
 	if local_number_of_tables  >= 1 then ;
-		
+
 		LET local_max_length_table_name =9 ;
 		let local_table_names_delimited_list='' ;
-		
+
 		for local_table_index = 1 to local_number_of_tables
-			
+
 			LET local_table_name 						= TableName(local_table_index -1) ;
 			LET local_table_names_delimited_list 		= local_table_name & ';' & local_table_names_delimited_list ;
 			let local_length_table_name 				= len (local_table_name );
-			
+
 			if local_length_table_name > local_max_length_table_name THEN
 				LET local_max_length_table_name = local_length_table_name ;
 			END IF ;
-			
-						
+
+
 		next local_table_index ;
-	
+
 		//call output_variable_values ('local_max_length_table_name,local_max_length_numeric_output');
-		
+
 		//CALL local_output_single_horizontal_line ;
 		//LET local_table_names_delimited_list_UPPER = local_table_names_delimited_list ;
 		call LIB_CF_sort_delimited_list (local_table_names_delimited_list, ';') ;
-		
+
 		// TODO - SORT THE LIST OF TABLE NAMES IN A CASE IN-SENSITIVE MANNER
-	
+
 		LET local_table_names_delimited_list = LIB_CF_sort_delimited_list.sorted_list ;
-		
-		
+
+
 		call LIB_CF_trace ('');
-		CALL LIB_CF_output_double_line ; 
-	
+		CALL LIB_CF_output_double_line ;
+
 		call LIB_CF_trace ('Procedure [LIB_CF_describe_tables_detailed_list] lists all in-memory tables, counts, and field names') ;
-	
+
 		CALL LIB_CF_output_single_line ;
 
 
 		//call output_variable_values ('local_table_names_delimited_list,local_number_of_tables') ;
-		
+
 		LET local_count_tables_with_zero_rows = 0 ;
-		
-		
+
+
 		let local_formatted_table_name_header		= $(LIB_CF_return_fixed_length_text('Tablename',local_max_length_table_name)) ;
 		let local_formatted_number_of_rows_header 	= $(LIB_CF_return_fixed_length_left_padded('Rows',local_max_length_numeric_output)) ;
-		let local_formatted_number_of_fields_header= $(LIB_CF_return_fixed_length_left_padded('Fields',local_max_length_numeric_output)) ;	
+		let local_formatted_number_of_fields_header= $(LIB_CF_return_fixed_length_left_padded('Fields',local_max_length_numeric_output)) ;
 		let local_formatted_output_header			= local_formatted_table_name_header & '  ' & local_formatted_number_of_rows_header & '' & local_formatted_number_of_fields_header & '       ' & 'Field names';
-	
+
 		//call output_variable_values ('local_formatted_table_name_header,local_formatted_number_of_rows_header,local_formatted_number_of_fields_header,local_formatted_output_header') ;
-		
-		
+
+
 		call LIB_CF_trace ('');
 		call LIB_CF_trace (local_formatted_output_header) ;
 		CALL LIB_CF_output_single_line ;
-		
-		
-				
+
+
+
 		for local_table_index = 1 to local_number_of_tables STEP 1 ;
-			
-			
+
+
 			LET local_table_name	= SUBFIELD (local_table_names_delimited_list, ';', local_table_index);
 			//LET local_table_name 	= TableName(local_table_index -1) ;
-			
+
 			let local_number_of_rows 		= NoOfRows('$(local_table_name)') ; if local_number_of_rows = 0 then ;LET local_count_tables_with_zero_rows = local_count_tables_with_zero_rows +1; end if ;
 			let local_number_of_fields 	= NoOfFields('$(local_table_name)') ;
 			//let local_table_number 		= 1+TableNumber('$(local_table_name)') ;
-			
+
 			call LIB_CF_get_table_field_names(local_table_name, 'N') ;
 			let local_field_name_list 					= LIB_CF_get_table_field_names.field_names ;
-	
+
 			let local_formatted_table_name 			= $(LIB_CF_return_fixed_length_right_padded('$(local_table_name)',local_max_length_table_name)) ;
 			// ;
 			//let local_formatted_number_of_rows 		= $(f_return_fixed_length_number($(local_number_of_rows),local_max_length_numeric_output)) ;
 			LET local_formatted_number_of_rows 		= num(local_number_of_rows,'###,###,###') ; //call output_variable_values ('local_formatted_number_of_rows');
 			let local_formatted_number_of_rows 		= $(LIB_CF_return_fixed_length_left_padded(local_formatted_number_of_rows,local_max_length_numeric_output)) ; //call output_variable_values ('local_formatted_number_of_rows');
-			
+
 			// the call itself issues a warning in LOG
 			call LIB_CF_tablename_has_potential_duplicate_in_model_YN (local_table_name) ; // check for bad ones
 			//LET local_duplicate_YN 						= LIB_CF_tablename_has_potential_duplicate_in_model_YN.response_YN  ;
-			
+
 			let local_formatted_number_of_fields 		= $(LIB_CF_return_fixed_length_number($(local_number_of_fields),local_max_length_numeric_output)) ;
 			let local_formatted_table_field_names		= REPLACE (local_field_name_list, ';', ', ') ;
-			
-			
+
+
 			let local_formatted_output_detail			= local_formatted_table_name & '  ' & local_formatted_number_of_rows  & local_formatted_number_of_fields & '       ' & local_formatted_table_field_names ;
-	
-	
-	
-			//		
-			//CALL OUTPUT_VARIABLE_VALUES ('local_table_index,local_table_name,local_number_of_rows,local_number_of_fields,local_table_number,get_table_field_names.field_names,local_formatted_table_name,local_count_tables_with_zero_rows,local_formatted_number_of_rows') ;	
-			
+
+
+
+			//
+			//CALL OUTPUT_VARIABLE_VALUES ('local_table_index,local_table_name,local_number_of_rows,local_number_of_fields,local_table_number,get_table_field_names.field_names,local_formatted_table_name,local_count_tables_with_zero_rows,local_formatted_number_of_rows') ;
+
 			call LIB_CF_trace (local_formatted_output_detail) ;
-			
-			
-			
-			
-			
-		
+
+
+
+
+
+
 		next local_table_index ;
-	
+
 		CALL LIB_CF_output_single_line ;
-		
+
 		//  local_count_tables_with_zero_rows
 		if  local_count_tables_with_zero_rows > 0 then ;
 			call LIB_CF_output_warning_message ('There are [$(local_count_tables_with_zero_rows)] tables with zero rows in them. This may be as expected or may be a sympton of a problem in the code or the data') ;
 			call LIB_CF_trace ('');
 		end if ;
-	
-	
+
+
 		let local_distinct_field_list	= '';
 
 		// FIND FIELDS THAT HAVE ZERO VALUES IN THEM
 		for local_table_index = 1 to NoOfTables() ;
-		
+
 			let local_table_name = TableName (local_table_index-1);
-			
+
 			for local_field_index = 1 to NoOfFields (local_table_name);
-			
+
 				let local_field_name = FieldName (local_field_index ,local_table_name );
-				
+
 				//let local_found_duplicate = INDEX ( local_distinct_field_list, local_field_delimiter & local_field_name & local_field_delimiter)  ;
-				
-				
+
+
 				LET local_distinct_fieldvalue_count = FIELDVALUECOUNT ( local_field_name) ;
-				
+
 				//call output_variable_values ('local_table_index,local_table_name,local_field_index,local_field_name,local_distinct_field_list,common_distinct_fieldvalue_count') ;
-				
+
 				IF local_distinct_fieldvalue_count = 0 THEN ;
 					LET local_distinct_field_list = local_distinct_field_list & local_field_name & '; ' ;
 				ELSE
 					// do nothing
-					
+
 				END IF ;
-				
+
 			NEXT local_field_index ;
-		
+
 		NEXT local_table_index;
-		
+
 		IF local_distinct_field_list <> '' THEN ;
-		
+
 			call LIB_CF_output_warning_message ('The following fields have either no values in them or contain only NULLs. This may be as expected or may be a sympton of a problem in the code or the data') ;
 			call LIB_CF_trace ( REPLACE ('>>>>>>>> Fields : $(local_distinct_field_list)', ';' ,',') ) ;
-		
+
 		END IF ;
 
 	end if ; // no tables so dont do anything	 [if local_number_of_tables  >= 1 then ;]
-	
+
 end sub ;
 
 SUB LIB_CF_describe_all_tables (param_ignore_for_now);
@@ -1053,13 +1054,13 @@ todo - centralize get data model metadata into a single procedure and change the
 SUB LIB_CF_detect_synthetic_keys_in_data_model ( /* local vars */ local_table_names_list, local_number_of_tables, local_table_index, local_table_name, local_delimiter, local_field_name_list, local_field_name_count, local_NoOfRows_only_multi_field_relationships,  local_if_detected_empty_the_data_model_YN, local_if_detected_generate_fatal_error_YN, local_text_to_show_user ) ;
 
 	CALL LIB_CF_trace ('SUB [LIB_CF_detect_synthetic_keys_in_data_model] has been called (this SUB receives no parameters') ;
-	
+
 	LET local_delimiter = ';' ;
-	
+
 	// todo - MAKE THESE parameters and not constants
 	LET local_if_detected_empty_the_data_model_YN = 'Y'; // param_if_detected_empty_the_data_model_YN
 	LET local_if_detected_generate_fatal_error_YN = 'N' ; // param_if_detected_generate_fatal_error_YN
-		
+
 	call LIB_CF_get_list_of_table_names_from_data_model ;
 	LET local_table_names_list 	= LIB_CF_get_list_of_table_names_from_data_model.table_names_list ;
 	LET local_number_of_tables 	= LIB_CF_get_list_of_table_names_from_data_model.number_of_tables ;
@@ -1073,36 +1074,36 @@ SUB LIB_CF_detect_synthetic_keys_in_data_model ( /* local vars */ local_table_na
 	;
 
 	FOR local_table_index = 1 TO local_number_of_tables STEP 1  ;
-	
+
 		LET local_table_name = SUBFIELD ( local_table_names_list, local_delimiter, local_table_index) ; // todo - does this handle delimiters well?
-		
+
 		CALL LIB_CF_get_table_field_names (local_table_name) ;
 		LET local_field_name_list 	= LIB_CF_get_table_field_names.field_names ;
 		LET local_field_name_count 	= LIB_CF_get_table_field_names.field_names_count ;
-		
-		CONCATENATE 
+
+		CONCATENATE
 			( [LIB_CF_detect_synthetic_keys_in_data_model.tables_and_fields] )
-		LOAD 
+		LOAD
 			'$(local_table_name)' 											AS table_name
 			,
 			SUBFIELD ( '$(local_field_name_list)', '$(local_delimiter)' ) 	AS field_name // SUBFIELD with 2 parameters in a LOAD generates one row per delimited value
-		AutoGenerate 
+		AutoGenerate
 			(1)
 		;
-		
+
 	NEXT local_table_index ;
 
 	// prepare for the Cartesian Product
 	LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_cartesian:
 	NOCONCATENATE
-	LOAD 
+	LOAD
 		table_name as table_name_1
 		,
 		field_name
 	RESIDENT
 		[LIB_CF_detect_synthetic_keys_in_data_model.tables_and_fields]
 	;
-	
+
 	INNER JOIN  // JOIN WILL BE ON FIELD NAMED 'field_name'
 
 		( [LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_cartesian] )
@@ -1116,7 +1117,7 @@ SUB LIB_CF_detect_synthetic_keys_in_data_model ( /* local vars */ local_table_na
 		[LIB_CF_detect_synthetic_keys_in_data_model.tables_and_fields]
 	;
 
-	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------ 
+	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
 	// preceding LOAD used below. Please read from the bottom up
 
 	LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_concat:
@@ -1132,19 +1133,19 @@ SUB LIB_CF_detect_synthetic_keys_in_data_model ( /* local vars */ local_table_na
 		table_name_2
 		,
 		CONCAT (DISTINCT field_name, '$(local_delimiter)' ) 		AS field_name_list
-	
-	RESIDENT 
-	
-		[LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_cartesian] 
-	
+
+	RESIDENT
+
+		[LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_cartesian]
+
 	GROUP BY
 		table_name_1
 		,
 		table_name_2
 	;
 
-	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------ 
-	
+	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+
 	// Remove Duplicates and single field relationships
 
 	LIB_CF_detect_synthetic_keys_in_data_model.only_multi_field_relationships:
@@ -1156,110 +1157,110 @@ SUB LIB_CF_detect_synthetic_keys_in_data_model ( /* local vars */ local_table_na
 		,
 		field_name_list
 		,
-		field_count	
-	
+		field_count
+
 	RESIDENT
-	
+
 		[LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_concat]
-	
+
 	WHERE
-	
-		field_count > 1 			// Keeps multi-field relationships and not single field ones 
+
+		field_count > 1 			// Keeps multi-field relationships and not single field ones
 		AND
 		table_name_1 < table_name_2	// Keeps 'table_name_1=A table_name_2=B' but not 'table_name_1=B table_name_2=A' i.e. remove duplicates
-		
+
 	;
 
-	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------ 
+	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
 	//LIB_CF_drop_all_tables_except
-		
+
 	call LIB_CF_drop_tables ('LIB_CF_detect_synthetic_keys_in_data_model.tables_and_fields,LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_concat,LIB_CF_detect_synthetic_keys_in_data_model.tables_and_their_fields_cartesian') ;
-	
+
 	call LIB_CF_describe_tables_detailed_list ('') ; // empty param to allow local vars to work
-	
-	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+
+	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
 
 
-	
-	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------ 
-	
+
+	// ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+
 	Let local_NoOfRows_only_multi_field_relationships = NoOfRows ('LIB_CF_detect_synthetic_keys_in_data_model.only_multi_field_relationships') ;
 
 	IF local_NoOfRows_only_multi_field_relationships > 0 THEN ;
-	
+
 		//let local_the_data_model_has_some_synthetic_keys_YN = TRUE ()  ; // todo - do i need this? nope. commented it out 3/15/2017 and will delete soon
-	
+
 		// collect text that helps describe synthetic keys
-		
+
 		// todo fix this
 		IF trim (UPPER(local_if_detected_empty_the_data_model_YN)) = 'Y' THEN ;
-			
+
 			// VARIABLE [local_table_names_list] contains a list of tables as were in the data model before this synthetic keys detection logic kicked in,
 			// so we want to 'empty' just those tables
 			// TODO - or maybe we just want to empty the tables that had multifield/synthetic relationships?
-			
-			
+
+
 //			LIB_CF_detect_synthetic_keys_in_data_model.synthetic_key_table_names:
 //			NOCONCATENATE
 //			LOAD
 //				CONCAT (table_name , local_delimiter) as table_name_list // ',' comma needed and not ['$(v_delimiter_text)'] because LOAD INLINE below uses it
-//			RESIDENT 
+//			RESIDENT
 //				[LIB_CF_detect_synthetic_keys_in_data_model.only_multi_field_relationships]
 //			GROUP BY
 //				table_name
 //			;
-			
+
 //			LET local_synthetic_key_table_names = PEEK ('table_name_list', 0, 'LIB_CF_detect_synthetic_keys_in_data_model.synthetic_key_table_names');
 //			CALL LIB_CF_drop_tables ('LIB_CF_detect_synthetic_keys_in_data_model.synthetic_key_table_names');
-			
+
 			CALL LIB_CF_rebuild_data_model_with_empty_tables (local_table_names_list, 'Y', '<DATA MODEL HAS SYNTHETIC KEYS. SEE FOLLOWING TABLE FOR MORE INFORMATION : LIB_CF_detect_synthetic_keys_in_data_model.only_multi_field_relationships ');
 
 			let local_text_to_show_user = 'The target data model has synthetic keys and its original data has been replaced with minimal data to avoid the performance implications of synthetic keys.' ;
 		ELSE
 			let local_text_to_show_user = 'The target data model has synthetic keys' ;
 		END IF ;
-		
+
 		call LIB_CF_trace ('See special in-memory table named [LIB_CF_detect_synthetic_keys_in_data_model.only_multi_field_relationships] for more information');
-				
+
 		if TRIM (UPPER (local_if_detected_generate_fatal_error_YN)) = 'Y' THEN ;
-			call LIB_CF_generate_fatal_error( local_text_to_show_user) ; 
+			call LIB_CF_generate_fatal_error( local_text_to_show_user) ;
 			EXIT SCRIPT;
 		ELSE
-			call LIB_CF_output_warning_message ( local_text_to_show_user) ; 
+			call LIB_CF_output_warning_message ( local_text_to_show_user) ;
 		END IF ;
-		
-		
-	
-	
+
+
+
+
 	ELSE
-		
+
 		CALL LIB_CF_trace ('There were no synthetic keys in the target data model') ;
-		
+
 		// handle warning or message if target data model did not any contain any tables
 		// handle warning or message if all tables in target data model did not any contain any rows
-		
-	
+
+
 	END IF ;
 
-	
-	
+
+
 END SUB ; // LIB_CF_detect_synthetic_keys_in_data_model
 
-//t1: 
+//t1:
 //NOCONCATENATE
 //LOAD * INLINE [
 //FIELD1, FIELD2, FIELD3
 //]
 //;
 //
-//t2: 
+//t2:
 //NOCONCATENATE
 //LOAD * INLINE [
 //FIELD1, FIELD8, FIELD3
 //]
 //;
 //
-//t3: 
+//t3:
 //NOCONCATENATE
 //LOAD * INLINE [
 //FIELD1, FIELD8, FIELD2
@@ -1276,7 +1277,7 @@ SUB LIB_CF_determine_duplicates_in_list (param_list, param_delimiter /* local va
 
 	// define global vars
 	LET LIB_CF_determine_duplicates_in_list__responseYN =;
-	
+
 	// local vars
 	LET local_param_list_count = $(LIB_CF_subfield_count(param_list,param_delimiter));
 
@@ -1299,7 +1300,7 @@ END SUB ;
 ///$tab LIB_CF_drop_tables
 /*
 
-UPDATED VERSION of SF code. This code accepts a comma delimited list of tables and issues a single [DROP TABLES table1, table2, table3 ] command 
+UPDATED VERSION of SF code. This code accepts a comma delimited list of tables and issues a single [DROP TABLES table1, table2, table3 ] command
 using DROP TABLES with list of tables speeds up DROP TABLES
 
 companion SUBs are DROP_ALL_TABLES_EXCEPT (param_table_list)
@@ -1310,78 +1311,78 @@ companion SUBs are DROP_ALL_TABLES_EXCEPT (param_table_list)
 // will issue a DROP TABLES [table1], [table2] command
 SUB LIB_CF_drop_tables (param_table_names_list /* local vars */ , local_table_names_list, local_number_of_tables, local_table_name, local_table_index, local_number_of_tables, local_table_names_list_formatted, local_table_name_count_running, local_table_names_not_found_list, local_table_name_count ) ;
 // param_table_names_list = assumed to be comma delimited and properly formed except all trim spaces
- 
+
 	LET local_table_names_list = param_table_names_list ; // copy to local to protect calling variable
 	LET local_table_names_list = TRIM (local_table_names_list);
-	
+
 	IF local_table_names_list = '*' THEN ;
 		// '*' means drop all tables
 
-		CALL LIB_CF_get_list_of_table_names_from_data_model ; 
+		CALL LIB_CF_get_list_of_table_names_from_data_model ;
 		LET local_table_names_list = LIB_CF_get_list_of_table_names_from_data_model.table_names_list ; // is returned ';' delimited
-		
+
 	ELSE
 		// else drop named tables
-		LET local_table_names_list = REPLACE (local_table_names_list, ',', ';') ; // I use ';' within Common Functions as a list terminator	
-	
+		LET local_table_names_list = REPLACE (local_table_names_list, ',', ';') ; // I use ';' within Common Functions as a list terminator
+
 	END IF ;
-	
+
 	IF RIGHT (local_table_names_list, 1) <> ';' THEN ; LET local_table_names_list = local_table_names_list & ';'; END IF ; // ensure end of list has a ;
 	LET local_number_of_tables = SubStringCount (local_table_names_list, ';') ;
-	
+
 	LET local_table_names_list_formatted = '' ;
 	LET local_table_names_not_found_list = '' ;
 	LET local_table_name_count_running 		= 0;
-	
+
 	FOR local_table_index = 1 TO local_number_of_tables STEP 1 ;
-	
+
 		LET local_table_name = SubField (local_table_names_list, ';', local_table_index ); // SUBFIELD position start at 1
-		
+
 		let local_table_name_count 			= SubStringCount (';' & local_table_names_list, ';' & local_table_name & ';');
 		LET local_table_name_count_running 	= local_table_name_count_running + local_table_name_count ;
-		
+
 		//call LIB_CF_output_variable_values ('local_table_name_count');
-		
-		
+
+
 		IF $(LIB_CF_does_table_exist_YN(local_table_name)) = 'Y' THEN ;
-			
+
 			LET local_table_names_list_formatted = local_table_names_list_formatted & '[' & local_table_name & ']' ;
 			IF local_table_index < local_number_of_tables THEN ; LET local_table_names_list_formatted = local_table_names_list_formatted & ' , ' ; END IF ;
-			
+
 		ELSE
-			
+
 			LET local_table_names_not_found_list = local_table_names_not_found_list & local_table_name & ',' ;
-			
+
 		END IF ;
-		
+
 	NEXT local_table_index ;
-	
+
 	IF local_table_names_not_found_list <> '' THEN
-	
+
 		// todo - should be fatal or warning?
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_drop_tables] was asked to drop the following tables but they dont exist in memory : $(local_table_names_not_found_list)') ;
 		EXIT SCRIPT ;
-	
+
 	END IF ;
 
 	IF local_table_name_count_running > local_number_of_tables THEN ;
-	
+
 			CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_drop_tables] was passed a list of table names which contained duplicates. Please review the full list : $(param_table_names_list)');
 			EXIT SCRIPT ;
 	END IF ;
-	
-		
+
+
 	//call LIB_CF_output_variable_values ('local_table_names_list');
 	CALL LIB_CF_trace ('SUB [LIB_CF_drop_tables] will drop the following in-memory tables : $(local_table_names_list_formatted)');
 	DROP TABLES $(local_table_names_list_formatted) ;
-	
+
 
 END SUB ; // LIB_CF_drop_tables
 
 SUB LIB_CF_drop_all_tables ;
 
 	CALL LIB_CF_drop_tables ('*') ;
-	
+
 END SUB ;
 
 
@@ -1395,20 +1396,20 @@ SUB LIB_CF_drop_all_tables_except (param_table_names_to_keep /* local vars */ , 
 	LET local_number_of_tables_to_keep 		= SubStringCount (local_table_names_to_keep, ';') ;
 	LET local_table_names_to_keep 			= ';' & local_table_names_to_keep ;
 	// at this point the list of tables we want to keep are like this [;table1;table2;table3]
-	
-	
-	 
-	CALL LIB_CF_get_list_of_table_names_from_data_model ; 
-	
+
+
+
+	CALL LIB_CF_get_list_of_table_names_from_data_model ;
+
 	LET local_number_of_tables_in_data_model	= LIB_CF_get_list_of_table_names_from_data_model.number_of_tables ;
 	LET local_table_names_in_data_model 		= LIB_CF_get_list_of_table_names_from_data_model.table_names_list ;
 	//CALL LIB_CF_output_variable_values ('local_number_of_tables_in_data_model,local_table_names_in_data_model');
-	
+
 	// must remove table names from full list that match the list supplied to this SUB
 	LET local_table_names_to_be_dropped = '';
-	
+
 	FOR local_table_index = 1 TO local_number_of_tables_in_data_model STEP 1 ;
-	
+
 		LET local_table_name 			= SubField (local_table_names_in_data_model, ';', local_table_index);
 		LET local_table_found_position 	= INDEX (local_table_names_to_keep, ';' & local_table_name & ';');
 
@@ -1418,23 +1419,23 @@ SUB LIB_CF_drop_all_tables_except (param_table_names_to_keep /* local vars */ , 
 		ELSE
 			// if the table name (from the model) is not in the exception list then record it in our list
 			LET local_table_names_to_be_dropped = local_table_names_to_be_dropped & local_table_name & ';' ;
-			
+
 		END IF ;
-		
-		
+
+
 	NEXT local_table_index ;
-	
+
 	IF  local_table_names_to_be_dropped <> '' THEN ;
-	
+
 		LET local_table_names_to_be_dropped = REPLACE (local_table_names_to_be_dropped, ';', ',' ); // some common function routines expect comma delimited lists
 		CALL LIB_CF_drop_tables (local_table_names_to_be_dropped);
 
 	ELSE
-		
+
 		CALL LIB_CF_trace ('SUB [LIB_CF_drop_all_tables_except] had no tables to be dropped based on the exception list : $(param_table_names_to_keep)');
-		
+
 	END IF ;
-	
+
 END SUB ;
 
 
@@ -1460,7 +1461,7 @@ which can directly be used by DROP TABLE or DROP TABLES command to drop a series
 
 OUTSTANDING ITEMS:
 More error checking e.g. empty table name, non-wildcard table name does not match model, issue WARNING if no tables to drop OR no tables remain (depending on which command issued)
-Add code that warns if tables exist in memory that have identical names but different case. 
+Add code that warns if tables exist in memory that have identical names but different case.
 i MAY merge this with the other DROP TABLES routtines but since this SUB is easily misused it needs more consideration
 
 
@@ -1478,40 +1479,40 @@ SUB LIB_CF_get_list_of_table_names_using_wildcard (param_list_of_table_names_wit
 
 	// Constants
 	LET local_LIST_DELIMITER = ';' ;
-	
+
 	LET local_param_list_of_table_names_with_wildcards = param_list_of_table_names_with_wildcards ; // work with local copy to avoid changing source variable if any
-	
+
 	//CALL OUTPUT_VARIABLE_VALUES ('local_param_list_of_table_names_with_wildcards');
-	
+
 	// Tidy up and prepare to count/process comma delimited list of table names (which may include wildcards)
 	LET local_param_list_of_table_names_with_wildcards = TRIM (local_param_list_of_table_names_with_wildcards);
 	IF RIGHT (local_param_list_of_table_names_with_wildcards, 1) <> local_LIST_DELIMITER THEN ; LET local_param_list_of_table_names_with_wildcards = local_param_list_of_table_names_with_wildcards & local_LIST_DELIMITER; END IF ;
-	
+
 	LET local_number_of_tables_in_data_model = NoOfTables () ;
-	
-	
-	
+
+
+
 	// I wanted to use TABLENAME function combined with AUTOGENERATE to generate the table below but it seems QVW V11 (11.20.12913.0409) has a bug in that [ TABLENAME (IterNo()) ] does not work properly inside a AUTOGENERATE
 	LET local_param_list_of_table_names_with_wildcards_parameter_count = SUBSTRINGCOUNT (local_param_list_of_table_names_with_wildcards, local_LIST_DELIMITER);
-	
+
 	//CALL OUTPUT_VARIABLE_VALUES ('local_param_list_of_table_names_with_wildcards_parameter_count,local_param_list_of_table_names_with_wildcards,local_number_of_tables_in_data_model');
-	
+
 	//EXIT SCRIPT;
 	LET local_formatted_list_of_table_names_that_match 			= '' ;
 	LET local_formatted_list_of_table_names_that_do_not_match 	= '' ;
-	
+
 	FOR local_wildcard_index = 1 to local_param_list_of_table_names_with_wildcards_parameter_count STEP 1 ;
-	
+
 		LET local_wildcard_clause = trim (SUBFIELD (local_param_list_of_table_names_with_wildcards, local_LIST_DELIMITER, local_wildcard_index ) )  ;
-		
+
 		//CALL OUTPUT_VARIABLE_VALUES ('local_wildcard_index, local_wildcard_clause') ;
-		
+
 		for local_table_index =1  to local_number_of_tables_in_data_model step 1 ;
-		
+
 			let local_table_name = TABLENAME ( local_table_index-1) ;
-			
+
 			LET local_wildmatch_position_number = WILDMATCH ( local_table_name , local_wildcard_clause ) ;
-	
+
 			IF local_wildmatch_position_number > 0 THEN
 				LET local_wildmatch_yn 	= 'Y' ;
 
@@ -1525,10 +1526,10 @@ SUB LIB_CF_get_list_of_table_names_using_wildcard (param_list_of_table_names_wit
 //					LET local_formatted_list_of_table_names_that_do_not_match 	= local_formatted_list_of_table_names_that_do_not_match 	& ' [' & local_table_name & ']' & local_LIST_DELIMITER ;
 //				END IF ;
 			END IF ;
-			
-			
+
+
 			//CALL OUTPUT_VARIABLE_VALUES ('local_table_index,local_table_name,local_wildmatch_position_number,local_wildmatch_yn') ;
-			
+
 //			list_of_table_names_that_matched:
 //			// IMPLIED CONCATENATION
 //			LOAD * INLINE [
@@ -1537,31 +1538,31 @@ SUB LIB_CF_get_list_of_table_names_using_wildcard (param_list_of_table_names_wit
 //			]
 //			;
 		NEXT local_table_index ;
-	
-	
+
+
 	NEXT local_wildcard_index ;
-	
+
 	// BUILD LIST of tables that do not match wildcards so that calling procedure may use it
 	FOR local_table_index =1  to local_number_of_tables_in_data_model STEP 1 ;
-		
+
 		let local_table_name = TABLENAME ( local_table_index-1) ;
-		
+
 		IF $(LIB_CF_does_table_exist_YN(local_table_name)) <> 'Y' THEN ;
 
 		// TODO - I DONT THINK CODE CAN GET HERE BUT JUST IN CASE
 			//CALL LIB_CF_trace ('ERROR [$(local_table_name)]');
-			
+
 			call LIB_CF_generate_fatal_error ('SUB [LIB_CF_get_list_of_table_names_with_wildcard] table cannot be found :$(local_table_name)') ;
 			exit sub ;
-		
+
 		END IF ;
-		
+
 		IF INDEX (local_LIST_DELIMITER & local_formatted_list_of_table_names_that_match, local_LIST_DELIMITER & local_table_name & local_LIST_DELIMITER ) = 0 then ;
-		
+
 			LET local_formatted_list_of_table_names_that_do_not_match 	= local_formatted_list_of_table_names_that_do_not_match 	& '' & local_table_name & '' & local_LIST_DELIMITER ;
 
 		END IF ;
-	
+
 	NEXT local_table_index;
 
 
@@ -1569,8 +1570,8 @@ SUB LIB_CF_get_list_of_table_names_using_wildcard (param_list_of_table_names_wit
 	IF RIGHT (local_formatted_list_of_table_names_that_do_not_match,1) 	= local_LIST_DELIMITER THEN ; LET local_formatted_list_of_table_names_that_do_not_match 	= LEFT (local_formatted_list_of_table_names_that_do_not_match, LEN (local_formatted_list_of_table_names_that_do_not_match)-1); END IF ;
 
 	//CALL OUTPUT_VARIABLE_VALUES ('local_formatted_list_of_table_names_that_match,local_formatted_list_of_table_names_that_do_not_match');
-	
-	// 
+
+	//
 	LET LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names 					= local_formatted_list_of_table_names_that_match;
 	LET LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names_formatted		= '[' & REPLACE (LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names, local_LIST_DELIMITER, '], [') & ']' ;
 	LET LIB_CF_get_list_of_table_names_using_wildcard.non_matching_table_names 				= local_formatted_list_of_table_names_that_do_not_match;
@@ -1582,9 +1583,9 @@ END SUB ;
 SUB LIB_CF_drop_tables_using_wildcard	(param_list_of_table_names_with_wildcards)
 
 	//CALL SUB_TRACE_EVENT ('SUB DROP_TABLES_WILDCARD () is executing with parameter of : $(param_list_of_table_names_with_wildcards)') ;
-	
+
 	call LIB_CF_get_list_of_table_names_using_wildcard (param_list_of_table_names_with_wildcards) ;
-	
+
 //	LET LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names 					= ;
 //	LET LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names_formatted		= ;
 //	LET LIB_CF_get_list_of_table_names_using_wildcard.non_matching_table_names 				= ;
@@ -1595,21 +1596,21 @@ SUB LIB_CF_drop_tables_using_wildcard	(param_list_of_table_names_with_wildcards)
 	CALL LIB_CF_OUTPUT_VARIABLE_VALUES ('LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names_formatted');
 
 	// todo - check if list contains duplicates except for case sensitivity and decide how i want to deal with that
-	
+
 	DROP TABLES $(LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names_formatted) ;
 
 	CALL LIB_CF_trace ('INFORMATION: After the DROP TABLE command the following tables should be in-memory:');
 	CALL LIB_CF_OUTPUT_VARIABLE_VALUES ('LIB_CF_get_list_of_table_names_using_wildcard.non_matching_table_names_formatted');
-	
+
 END SUB ; // drop_all_tables_wildcard
 
 
 SUB LIB_CF_drop_tables_except_wildcard	(param_list_of_table_names_with_wildcards)
 
 	//CALL SUB_TRACE_EVENT ('SUB DROP_TABLES_EXCEPT_WILDCARD() is executing with parameter of : $(param_list_of_table_names_with_wildcards)');
-	
+
 	call LIB_CF_get_list_of_table_names_using_wildcard (param_list_of_table_names_with_wildcards) ;
-	
+
 	//	LET LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names 					= ;
 //	LET LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names_formatted		= ;
 //	LET LIB_CF_get_list_of_table_names_using_wildcard.non_matching_table_names 				= ;
@@ -1621,33 +1622,33 @@ SUB LIB_CF_drop_tables_except_wildcard	(param_list_of_table_names_with_wildcards
 
 	CALL LIB_CF_trace ('DROP TABLES command being issued with the following list of named tables (after any wildcards have been matched)');
 	CALL LIB_CF_OUTPUT_VARIABLE_VALUES ('LIB_CF_get_list_of_table_names_using_wildcard.non_matching_table_names_formatted');
-	
+
 	DROP TABLES $(LIB_CF_get_list_of_table_names_using_wildcard.non_matching_table_names_formatted) ;
 
 	CALL LIB_CF_trace ('INFORMATION: After the DROP TABLE command the following tables should be in-memory:');
 	CALL LIB_CF_OUTPUT_VARIABLE_VALUES ('LIB_CF_get_list_of_table_names_using_wildcard.matching_table_names_formatted');
-	
-	
+
+
 END SUB ; // drop_tables_except_wildcard
 
 ///$tab LIB_CF_fatal_error_if_field_doesnt_exist_in_data_model
 SUB LIB_CF_fatal_error_if_field_doesnt_exist_in_data_model (param_field_name) ;
-	
+
 	call LIB_CF_trace ('A call to [SUB LIB_CF_fatal_error_if_field_doesnt_exist_in_data_model] has field name [$(param_field_name)]. This procedure is usually called before a [LOAD FROM QVD/XLS/CSV WHERE EXISTS ($(param_field_name))] statement to detect bad a field name since QVW does not detect such in a simple [ EXISTS (fieldname) ] syntax') ;
 
 	IF $(LIB_CF_does_field_exist_in_data_model_YN('$(param_field_name)')) <> 'Y' THEN
 
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_fatal_error_if_field_doesnt_exist_in_data_model] field [$(param_field_name)] is expected to exist in the data model at this stage of the script execution but doesnt. The script cannot continue.') ;
 		EXIT SCRIPT; // this code line should never be reached
-		
-	ELSE 
 
-		//CALL LIB_CF_trace ('SUB [LIB_CF_fatal_error_if_field_doesnt_exist_in_data_model] field [$(param_field_name)] has been confirmed that it exists in the data model') ;	
+	ELSE
+
+		//CALL LIB_CF_trace ('SUB [LIB_CF_fatal_error_if_field_doesnt_exist_in_data_model] field [$(param_field_name)] has been confirmed that it exists in the data model') ;
 		// do nothing
-		
+
 	END IF ;
-	
-	
+
+
 END SUB ;
 ///$tab LIB_CF_get_configuration_parameters_from_file
 
@@ -1655,76 +1656,76 @@ SUB LIB_CF_get_configuration_parameters_from_file (param_file /* local vars */ ,
 
 // check file exists
 // check file has 2 fields
-// fields named "CONFIGURATION_PARAM_NAME, CONFIGURATION_PARAM_VALUE", 
+// fields named "CONFIGURATION_PARAM_NAME, CONFIGURATION_PARAM_VALUE",
 // LOAD FULL FILE
 // PROCESS EACH ROW AND CREATE/SET VARIABLE WHOSE NAME IS IN FIELD "" TO VALUE WHICH IS IN FIELD ""
-// 
+//
 
 	let local_param_file 			= param_file ;
  	let local_config_table_name 	= 'LIB_CF_get_configuration_parameters.UNIQUE_TABLE_NAME' ;
- 	 
+
 	IF $(LIB_CF_does_file_exist_YN(local_param_file)) <> 'Y'  then ;
-	
+
 		// FATAL ERROR
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_get_configuration_parameters_from_file] cannot locate file : $(local_param_file)');
 		EXIT SCRIPT;
-		
+
 	END IF ;
 
-	CALL LIB_CF_describe_file (local_param_file) ; 
-	
+	CALL LIB_CF_describe_file (local_param_file) ;
+
 	$(local_config_table_name):
 	NOCONCATENATE
-	LOAD 
+	LOAD
 		*
 	FROM
 		[$(local_param_file)] (TXT)
 	;
-	
+
 	IF  FieldNumber('CONFIGURATION_PARAM_NAME',local_config_table_name) = 0 THEN ;
-	
+
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_get_configuration_parameters_from_file] field [CONFIGURATION_PARAM_NAME] must exist in file : $(local_param_file)');
 		EXIT SCRIPT;
-		 
+
 	END IF ;
-	
+
 
 	IF  FieldNumber('CONFIGURATION_PARAM_VALUE',local_config_table_name) = 0 THEN ;
-	
+
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_get_configuration_parameters_from_file] field [CONFIGURATION_PARAM_VALUE] must exist in file : $(local_param_file)');
 		EXIT SCRIPT;
-		 
+
 	END IF ;
-		
-	
+
+
 	//CALL LIB_CF_describe_table (local_config_table_name) ;
-	
+
 	LET local_number_of_config_parameters = NoOfRows (local_config_table_name);
-	
+
 	FOR local_parameter_index = 1 TO local_number_of_config_parameters STEP 1;
-	
+
 		LET local_param_name = TRIM (PEEK ('CONFIGURATION_PARAM_NAME', local_parameter_index-1, local_config_table_name));
 		//call LIB_CF_output_variable_values ('local_param_name') ;
-		
+
 		if local_param_name = '' then ;
 			CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_get_configuration_parameters_from_file] field [CONFIGURATION_PARAM_NAME] is not a valid field or variable name. (File has empty lines?)');
 			EXIT SCRIPT;
 		END IF ;
-		
+
 		LET local_param_value = PEEK ('CONFIGURATION_PARAM_VALUE', local_parameter_index-1, local_config_table_name);
 		//call LIB_CF_output_variable_values ('local_parameter_index,local_param_name,local_param_value') ;
-		
+
 		//LET local_param_variable_name = '$()';
-		SET $(local_param_name) = $(local_param_value) ; 
-		
+		SET $(local_param_name) = $(local_param_value) ;
+
 		call LIB_CF_output_variable_values ('local_parameter_index,local_param_name,$(local_param_name)') ;
-		
-		//call LIB_CF_output_variable_values 
-		
+
+		//call LIB_CF_output_variable_values
+
 	NEXT local_parameter_index;
 
 	DROP TABLE '$(local_config_table_name)';
-	
+
 END SUB ;
 
 //call LIB_CF_get_configuration_parameters_from_file ('Z:\shared_with_vmware\config.csv');
@@ -1739,59 +1740,59 @@ SUB LIB_CF_get_distinct_version_of_delimited_list (param_list, param_delimiter /
 	// global vars to return
 	LET LIB_CF_get_distinct_version_of_delimited_list.list = ;
 	LET LIB_CF_get_distinct_version_of_delimited_list.count = ;
-	
+
 	LET local_param_list 		= param_list;
 	//call LIB_CF_output_variable_values ('local_param_list');
-	
+
 	LET local_param_delimiter  	= TRIM (param_delimiter ) ;
 
 	LET local_number_of_items_in_list = SubStringCount (local_param_list, 	local_param_delimiter)+1 ;
-	
+
 	//call LIB_CF_output_variable_values ('local_number_of_items_in_list');
-	
+
 	LET local_distinct_list		= local_param_delimiter;
 	LET local_item_count 		= 0;
-	
+
 	FOR local_list_index = 1 TO local_number_of_items_in_list STEP 1 ;
 
 		let local_list_value	= SubField (local_param_list, local_param_delimiter, local_list_index);
-		
+
 		//CALL LIB_CF_output_variable_values ('local_list_value');
-		
-		IF INDEX (local_distinct_list, local_param_delimiter & local_list_value & local_param_delimiter) =0 THEN 
+
+		IF INDEX (local_distinct_list, local_param_delimiter & local_list_value & local_param_delimiter) =0 THEN
 			// not already in distinct list so add it
 			LET local_distinct_list = local_distinct_list & local_list_value & local_param_delimiter ;
 			LET local_item_count = local_item_count +1;
-			
+
 		ELSE
 			// do nothing
 		END IF ;
-	
-		
+
+
 	NEXT local_list_index ;
-	
+
 //	IF LEFT (local_distinct_list, 1) = local_param_delimiter THEN ; LET local_distinct_list = RIGHT (local_distinct_list, LEN (local_distinct_list)-1); END IF ;
-	
+
 	LET local_distinct_list = $(LIB_CF_leading_delimiter(local_distinct_list,local_param_delimiter)) ;
 	LET local_distinct_list = $(LIB_CF_trailing_delimiter(local_distinct_list,local_param_delimiter)) ;
-	
+
 	IF local_distinct_list = '' THEN ; // then something is badly wrong with the code in this SUB
-	
+
 		// FATAL ERROR
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_get_distinct_version_of_delimited_list] has an issue populating the following local var : local_distinct_list');
 		EXIT SCRIPT;
-		
+
 	END IF ;
-	
+
 	//CALL LIB_CF_output_variable_values ('local_distinct_list');
-	
+
 	LET LIB_CF_get_distinct_version_of_delimited_list.list 	= local_distinct_list;
 	LET LIB_CF_get_distinct_version_of_delimited_list.count = local_item_count;
 
 END SUB ;
 
 ///$tab LIB_CF_get_table_field_names
-sub LIB_CF_get_table_field_names (param_table_name, param_sort_list_YN /* local variables */,  local_field_index, local_number_of_fields ) 
+sub LIB_CF_get_table_field_names (param_table_name, param_sort_list_YN /* local variables */,  local_field_index, local_number_of_fields )
 
 
 	// GLOBAL VARIABLES THAT CALLING CODE CAN USE. I COULD HAVE USED 'BYREF' BUT THAT WOULD HAVE REQUIRED CALLING CODE TO HAVE TOO MUCH SET UP
@@ -1801,41 +1802,41 @@ sub LIB_CF_get_table_field_names (param_table_name, param_sort_list_YN /* local 
 
 
 	IF $(LIB_CF_check_table_exists_YN(param_table_name)) = 'Y' THEN ;
-		
-		let LIB_CF_get_table_field_names.field_names= '';
-		
-		LET local_number_of_fields = NoOfFields(param_table_name )  ;
-		
-		FOR  local_field_index = 1 TO local_number_of_fields STEP 1 
-		
-			IF local_field_index < local_number_of_fields THEN ;
-				LET LIB_CF_get_table_field_names.field_names = LIB_CF_get_table_field_names.field_names & FieldName( local_field_index, param_table_name) & ';' ; 
-			ELSE
-				LET LIB_CF_get_table_field_names.field_names = LIB_CF_get_table_field_names.field_names & FieldName( local_field_index, param_table_name) ;		
-			END IF;
-				
-		NEXT local_field_index ;
-		
 
-		IF UPPER(TRIM(param_sort_list_YN)) = 'Y' THEN 
-		
+		let LIB_CF_get_table_field_names.field_names= '';
+
+		LET local_number_of_fields = NoOfFields(param_table_name )  ;
+
+		FOR  local_field_index = 1 TO local_number_of_fields STEP 1
+
+			IF local_field_index < local_number_of_fields THEN ;
+				LET LIB_CF_get_table_field_names.field_names = LIB_CF_get_table_field_names.field_names & FieldName( local_field_index, param_table_name) & ';' ;
+			ELSE
+				LET LIB_CF_get_table_field_names.field_names = LIB_CF_get_table_field_names.field_names & FieldName( local_field_index, param_table_name) ;
+			END IF;
+
+		NEXT local_field_index ;
+
+
+		IF UPPER(TRIM(param_sort_list_YN)) = 'Y' THEN
+
 			CALL LIB_CF_sort_delimited_list ( LIB_CF_get_table_field_names.field_names , ';') ; // TODO - TEST THIS STILL WORKS EVEN THOUGH NO TRAILING DELIMITER
 			LET LIB_CF_get_table_field_names.field_names = LIB_CF_sort_delimited_list.sorted_list;
-			
+
 		ELSE
 			// WILL RETURN UNCHANGED
 
-			
+
 		END IF ;
-		
+
 		//LET LIB_CF_get_table_field_names.field_names_count = SubStringCount (LIB_CF_get_table_field_names.field_names, ';');
 		LET LIB_CF_get_table_field_names.field_names_count 	= $(LIB_CF_subfield_count(LIB_CF_get_table_field_names.field_names, ';')) ;
-		
-	ELSE 
+
+	ELSE
 		call LIB_CF_generate_fatal_error ('Procedure [LIB_CF_get_table_field_names] has been passed an invalid table name [$(param_table_name)]') ;
 		EXIT SUB ;
-				
-		
+
+
 	END IF ;
 
 
@@ -1851,18 +1852,18 @@ SUB LIB_CF_get_list_of_table_names_from_data_model ( /* LOCAL VARS */ local_numb
 	LET local_number_of_tables 	=NoOfTables () ;
 
 	LET local_table_names_list 	= '' ;
-	
+
 	FOR local_table_index = 1 to local_number_of_tables STEP 1;
-		
+
 		LET local_table_name = TableName (local_table_index-1) ;
-		
+
 		if local_table_index < local_number_of_tables THEN ;
 			LET local_table_names_list= local_table_names_list & local_table_name & ';' ;
 		ELSE
 			LET local_table_names_list= local_table_names_list & local_table_name ;
 		END IF ;
-		
-	
+
+
 	NEXT local_table_index ;
 
 
@@ -1877,55 +1878,55 @@ END SUB ;
 // accepts a QVD filename and returns 2 global variables with the field names delimited by ';'
 // get_qvd_field_names.field_names 			RETURNS field names in original sequence
 // get_qvd_field_names.field_names_sorted 	RETURNS field names in ascending alphanumeric sequence
-sub LIB_CF_get_qvd_field_names (param_qvd_filename, param_optional_sort_yn /* local variables */,  local_qvd_field_name, local_number_of_qvd_fields, local_field_index, local_field_names ) 
+sub LIB_CF_get_qvd_field_names (param_qvd_filename, param_optional_sort_yn /* local variables */,  local_qvd_field_name, local_number_of_qvd_fields, local_field_index, local_field_names )
 
 	// global var returned from this procedure
 	let LIB_CF_get_qvd_field_names.field_names_list = ;
 
 
 	IF $(LIB_CF_does_file_exist_YN(param_qvd_filename)) = 'Y' THEN ;
-		
+
 		let local_field_names	='';
-		
+
 		let local_number_of_qvd_fields = QvdNoOfFields( param_qvd_filename );
-		
+
 		for local_field_index = 1 to  local_number_of_qvd_fields step 1
-			
-			LET local_qvd_field_name = QvdFieldName( param_qvd_filename, local_field_index) ; 
-			
+
+			LET local_qvd_field_name = QvdFieldName( param_qvd_filename, local_field_index) ;
+
 			IF local_field_index < local_number_of_qvd_fields THEN ;
 				let local_field_names = local_field_names & local_qvd_field_name  & ';' ;
 			ELSE
 				// no trailing delomiter when end of string
 				let local_field_names = local_field_names & local_qvd_field_name  ;
 			END IF ;
-			
-		
+
+
 		next local_field_index ;
-		
+
 		IF UPPER (param_optional_sort_yn) = 'Y' THEN ;
-			
+
 			//let get_qvd_field_names.field_names_sorted = get_qvd_field_names.field_names ;
 			call LIB_CF_sort_delimited_list ( local_field_names, ';') ;
-			
+
 			LET LIB_CF_get_qvd_field_names.field_names_list = LIB_CF_sort_delimited_list.sorted_list ;
 
 		ELSE
 			//let get_qvd_field_names.field_names_sorted=;
 			LET LIB_CF_get_qvd_field_names.field_names_list = local_field_names;
-			
-		END IF ;	
-	ELSE 
-	
+
+		END IF ;
+	ELSE
+
 		let LIB_CF_get_qvd_field_names.field_names_list = 'SUB [LIB_CF_get_qvd_field_names] cannot get field names. File doesnt exist [$(param_qvd_filename)]' ;
 		call LIB_CF_generate_fatal_error (LIB_CF_get_qvd_field_names.field_names_list) ;
 		EXIT SCRIPT;
-		
+
 	END IF ;
 
 	// RETURNS
 	//call LIB_CF_output_variable_values ('LIB_CF_get_qvd_field_names.field_names_list');
-	
+
 END SUB
 ///$tab LIB_CF_is_field_name_unique_to_table
 sub LIB_CF_is_field_name_unique_to_table (param_table_name, param_field_name /* local vars */,local_table_name, local_param_table_name, local_field_name, local_field_existence_counter, local_number_of_tables, local_table_index, local_response)
@@ -1935,97 +1936,97 @@ sub LIB_CF_is_field_name_unique_to_table (param_table_name, param_field_name /* 
 	//let _response = 'N' ; // default
 	// global vars returned
 	LET LIB_CF_is_field_name_unique_to_table__response=;
-	
-	
+
+
 	LET local_param_table_name 	= param_table_name ;
 	LET local_field_name 		= param_field_name ;
-	
+
 	IF $(LIB_CF_check_table_exists_YN(local_param_table_name)) = 'Y' THEN ;
-	
+
 		IF $(LIB_CF_does_field_exist_in_table_YN(local_field_name,local_param_table_name)) = 'Y' THEN
-		
+
 			let local_field_existence_counter 	= 0 ;
 			let local_number_of_tables 			= NoOfTables() ;
-		
+
 			for local_table_index = 1 to local_number_of_tables STEP 1 ;
-			
+
 				LET local_table_name = TableName(local_table_index-1);
-				
+
 				IF $(LIB_CF_does_field_exist_in_table_YN(local_field_name,local_table_name)) = 'Y' THEN
 
 					let local_field_existence_counter = local_field_existence_counter + 1;
 
 				ELSE
 					// do nothing
-				
+
 				END IF ;
-			
+
 			NEXT local_table_index ;
-			
-			if local_field_existence_counter = 1 then // field exists on only one table and since we checked it was on our target table already, it must be unique		
+
+			if local_field_existence_counter = 1 then // field exists on only one table and since we checked it was on our target table already, it must be unique
 				let local_response = 'Y' ;
 			else
 				let local_response = 'N' ;	// cant be unique
 			end if ;
-		
-					
+
+
 		ELSE
 			CALL LIB_CF_generate_fatal_error ('In [SUB LIB_CF_is_field_name_unique_to_table] table name [$(local_param_table_name)] does not contain field name [$(local_field_name)]' );
 			EXIT SCRIPT;
-		
+
 		END IF ;
-		
+
 	ELSE
 
 		CALL LIB_CF_generate_fatal_error ('In [SUB LIB_CF_is_field_name_unique_to_table] table name [$(local_param_table_name)] does not exist' );
 		EXIT SCRIPT;
-	
+
 	END IF ;
-	let LIB_CF_is_field_name_unique_to_table__response = local_response ; 
+	let LIB_CF_is_field_name_unique_to_table__response = local_response ;
 
 end sub
 ///$tab LIB_CF_load_qvd_structure_only_into_new_table
 SUB LIB_CF_load_qvd_structure_only_into_new_table (param_qvd_file, param_table_name /* local vars */ ,local_field_names, local_error_situation ) ;
 
 	// todo -handle field names which have spaces
-	
+
 	IF $(LIB_CF_does_file_exist_YN(param_qvd_file)) = 'Y' THEN ;
-	
+
 		IF $(LIB_CF_does_table_exist_YN(param_table_name)) ='N' THEN ;
-			
+
 			call LIB_CF_get_qvd_field_names (param_qvd_file)  ;
 			LET local_field_names = LIB_CF_get_qvd_field_names.field_names_list ;
-			
+
 			let local_field_names = left (local_field_names, len (local_field_names)-1) ; // remove trailing semi-colon
-			
-			
+
+
 			let local_field_names = replace(local_field_names,';',','); // need commas for field lists
-							
+
 			$(param_table_name):
 			NOCONCATENATE LOAD * INLINE [
 			$(local_field_names)
-			] 
+			]
 			;
-		
+
 		ELSE // already exists so cannot create it
-			
-			
+
+
 			let LIB_CF_load_qvd_structure_only_into_new_table.table_name = 'SUB [LIB_CF_load_qvd_structure_only_into_new_table] cannot create a new table named [$(param_table_name)] because a table of that table already exists. Please see QVW.LOG for more information.';
 			call LIB_CF_generate_fatal_error (LIB_CF_load_qvd_structure_only_into_new_table.table_name ) ;
 			EXIT SCRIPT;
 
 		END IF ;
-		
-	
+
+
 	ELSE
-		
+
 		let LIB_CF_load_qvd_structure_only_into_new_table.table_name = 'SUB [LIB_CF_load_qvd_structure_only_into_new_table] cannot locate the following file. Please see QVW.LOG for more information : $(param_qvd_file)');
 		call LIB_CF_generate_fatal_error (LIB_CF_load_qvd_structure_only_into_new_table.table_name ) ;
 		EXIT SCRIPT;
-		
-	
+
+
 	END IF ;
-			
+
 
 END SUB ;
 
@@ -2035,39 +2036,39 @@ END SUB ;
 // NOTE: Since table names in QVW can technically contain spaces, applying TRIM in this code is not advisable
 
 sub LIB_CF_rename_table (param_table_name_before, param_table_name_after /* local vars */ )
-	
+
 //	call LIB_CF_trace ('SUB [LIB_CF_rename_table] Procedure [rename_table] attempting to rename table from [$(param_table_name_before)] to [$(param_table_name_after)]') ;
-	
+
 	if IsNull (param_table_name_before) or IsNull (param_table_name_after) or param_table_name_before = '' or param_table_name_after = ''  THEN
-	
+
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_rename_table] has insufficient or incorrect table names i.e. cannot rename [$(param_table_name_before)] TO [$(param_table_name_after)]') ;
 		exit sub ;
-		
+
 	END IF
-	
+
 	if $(LIB_CF_does_table_exist_YN(param_table_name_before)) <> 'Y' THEN
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_rename_table] table [$(param_table_name_before)] does not exist in model and cannot be renamed') ;
 		exit sub ;
 	end if
-	
+
 	if $(LIB_CF_does_table_exist_YN(param_table_name_after)) = 'Y' THEN
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_rename_table] table [$(param_table_name_after)] already exists in model and cannot be used in a rename') ;
 		exit sub ;
 	end if
 
-	
+
 	RENAME TABLE [$(param_table_name_before)] TO [$(param_table_name_after)] ;
-	
-	
+
+
 	if $(LIB_CF_does_table_exist_YN(param_table_name_before)) = 'Y' OR $(LIB_CF_does_table_exist_YN(param_table_name_after)) <> 'Y' THEN ;
-	
+
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_rename_table] the renaming of table [$(param_table_name_before)] to [$(param_table_name_after)] did not succeed. Please see QVW.LOG') ;
 		exit sub ;
-		
-	END IF ;
-	
 
-		
+	END IF ;
+
+
+
 END SUB ;
 ///$tab LIB_CF_replace_table
 
@@ -2077,10 +2078,10 @@ END SUB ;
 // and then the original table is dropped
 
 SUB LIB_CF_replace_table (param_original_table_name, param_temporary_table_name) ;
-	
+
 	call LIB_CF_drop_tables 	(param_original_table_name) ;
 	call LIB_CF_rename_table 	(param_temporary_table_name, param_original_table_name) ;
-	
+
 END SUB ;
 ///$tab LIB_CF_rebuild_data_model_with_empty_tables
 
@@ -2088,42 +2089,42 @@ sub LIB_CF_rebuild_data_model_with_empty_tables (param_table_name_list, param_em
 
 	LET local_param_empty_except_for_one_message_text_row_YN 	= param_empty_except_for_one_message_text_row_YN ;
 	LET local_param_message_text								= param_message_text ;
-	
+
 	LET local_delimiter 										= ';' ;
-	
+
 	LET local_table_names_list						= param_table_name_list;
 	LET local_number_of_tables 						= $(LIB_CF_subfield_count(local_table_names_list,local_delimiter)) ;
-	
+
 	FOR local_table_index = 1 TO local_number_of_tables STEP 1  ;
-	
+
 		LET local_table_name 		= SUBFIELD (local_table_names_list, local_delimiter, local_table_index) ;
-		
+
 		CALL LIB_CF_get_table_field_names (local_table_name) ;
 		LET local_field_name_list 	= LIB_CF_get_table_field_names.field_names ;
 		LET local_field_name_count 	= LIB_CF_get_table_field_names.field_names_count ;
-		
+
 		LET  local_field_name_list 	= REPLACE ( local_field_name_list, local_delimiter, ', ' ); // todo - deal with square brackets
-	
-		IF local_param_empty_except_for_one_message_text_row_YN = 'Y' THEN ; 		
-		
-			[LIB_CF_rebuild_data_model_with_empty_tables.TEMP]: 
+
+		IF local_param_empty_except_for_one_message_text_row_YN = 'Y' THEN ;
+
+			[LIB_CF_rebuild_data_model_with_empty_tables.TEMP]:
 			NOCONCATENATE LOAD * INLINE [
 			$(local_field_name_list)
 			<$(local_param_message_text)>
-			] 
+			]
 			;
 		ELSE
 
-			[LIB_CF_rebuild_data_model_with_empty_tables.TEMP]: 
+			[LIB_CF_rebuild_data_model_with_empty_tables.TEMP]:
 			NOCONCATENATE LOAD * INLINE [
 			$(local_field_name_list)
-			] 
+			]
 			;
-		
+
 		END IF ;
-		
+
 		CALL LIB_CF_replace_table (local_table_name, 'LIB_CF_rebuild_data_model_with_empty_tables.TEMP') ;
-	
+
 	NEXT local_table_index ;
 
 end sub ;
@@ -2150,7 +2151,7 @@ Best used as follows:
 SUB LIB_CF_store_data_model_in_qvd (param_qvd_file /* local vars */ , local_table_names_list, local_number_of_tables, local_table_index , local_table_name, local_field_name_list, local_field_name_count, local_delimiter );
 
 	LET local_delimiter = ';';
-	
+
 	call LIB_CF_get_list_of_table_names_from_data_model ;
 	LET local_table_names_list 	= LIB_CF_get_list_of_table_names_from_data_model.table_names_list ;
 	LET local_number_of_tables 	= LIB_CF_get_list_of_table_names_from_data_model.number_of_tables ;
@@ -2164,70 +2165,70 @@ SUB LIB_CF_store_data_model_in_qvd (param_qvd_file /* local vars */ , local_tabl
 	;
 
 	FOR local_table_index = 1 TO local_number_of_tables STEP 1  ;
-	
+
 		LET local_table_name = SUBFIELD ( local_table_names_list, local_delimiter, local_table_index) ; // todo -handles delimiters well?
-		
+
 		CALL LIB_CF_get_table_field_names (local_table_name) ;
 		LET local_field_name_list 	= LIB_CF_get_table_field_names.field_names ;
 		LET local_field_name_count 	= LIB_CF_get_table_field_names.field_names_count ;
-		
-		CONCATENATE 
+
+		CONCATENATE
 			( [LIB_CF_store_data_model_in_qvd.tables_and_fields] )
-		LOAD 
+		LOAD
 			'$(local_table_name)' 											AS table_name
 			,
 			SUBFIELD ( '$(local_field_name_list)', '$(local_delimiter)' ) 	AS field_name // SUBFIELD with 2 parameters in a LOAD generates one row per delimited value
-		AutoGenerate 
+		AutoGenerate
 			(1)
 		;
-		
+
 	NEXT local_table_index ;
-	
+
 	STORE 'LIB_CF_store_data_model_in_qvd.tables_and_fields' INTO '$(param_qvd_file)' (QVD) ;
-	
-	
+
+
 	DROP TABLE 'LIB_CF_store_data_model_in_qvd.tables_and_fields' ;
-	
+
 END SUB ;
 ///$tab LIB_CF_store_table_in_qvd
 
-// todo - should I make this generic (any file type)? 
+// todo - should I make this generic (any file type)?
 // todo - decide if metadata should be optional?  param_write_metadata_yn,
 
-sub LIB_CF_store_table_in_qvd (param_table_name, param_qvd_file, param_describe_yn  /* local vars */ , local_param_describe_yn) 
+sub LIB_CF_store_table_in_qvd (param_table_name, param_qvd_file, param_describe_yn  /* local vars */ , local_param_describe_yn)
 
 	LET local_param_describe_yn = UPPER(TRIM(param_describe_yn)) ;
-	
+
 	call LIB_CF_trace ('SUB [LIB_CF_store_table_in_qvd] attempting to store table [$(param_table_name)] in QVD file:$(param_qvd_file)') ;
-	
+
 	// check if table exists
-	IF $(LIB_CF_does_table_exist_YN(param_table_name)) <> 'Y' THEN 
+	IF $(LIB_CF_does_table_exist_YN(param_table_name)) <> 'Y' THEN
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_store_table_in_qvd] unable to write table [$(param_table_name)] to QVD since table does not exist') ;
 		EXIT SUB ;
 	ENDIF
-	
-	// optionally describe source table and target qvd 
+
+	// optionally describe source table and target qvd
 	if UPPER (local_param_describe_yn) = 'Y' THEN
 		call LIB_CF_trace ('SUB [LIB_CF_store_table_in_qvd] is about to over-write the following QVD:') ;
 		call LIB_CF_describe_QVD_file (param_qvd_file) ;
 	END IF
-	
+
 	// optionally build metadata (default to doing so)
 	//IF UPPER (param_write_metadata_yn) = 'Y' THEN
 		CALL add_metadata_comment_to_table (param_table_name) ;
 	//END IF
-	
+
 	// STORE QVD
 	STORE '$(param_table_name)' INTO '$(param_qvd_file)' (qvd);
 
-	// todo - check if filemodified datetime is different, if not then report error (coould not over-write QVD)	
+	// todo - check if filemodified datetime is different, if not then report error (coould not over-write QVD)
 
 	if UPPER (local_param_describe_yn) = 'Y' THEN
 		call LIB_CF_trace ('SUB [LIB_CF_store_table_in_qvd] has stored table [$(param_table_name)] in the following QVD:') ;
 		call LIB_CF_describe_QVD_file (param_qvd_file) ;
 	END IF
 
-	
+
 END SUB ;
 ///$tab LIB_CF_sort_delimited_list
 
@@ -2235,46 +2236,46 @@ sub LIB_CF_sort_delimited_list (param_delimited_list, param_delimiter /* optiona
 
 	// GLOBAL VARS ETC
 	let LIB_CF_sort_delimited_list.sorted_list =;
-	
+
 	// TIDY UP (TODO-SHOULD I BE REMOVING? MAYBE LIST ITEMS HAVE SPACES?
 	let param_delimited_list 	= trim (param_delimited_list) ;
 	let param_delimiter			= TRIM (param_delimiter) ;
-	
+
 	// NO LOGGING OF THIS PROC NORMALLY SINCE IT IS SO LOW LEVEL
 	//call sub_trace_event ('Procedure [sort_delimited_list] has been passed parameters param_delimited_list=[$(param_delimited_list)] and param_delimiter=[$(param_delimiter)]') ;
 
 	// validation
-	IF param_delimiter='' or IsNull (param_delimiter) OR IsNull (param_delimited_list) OR param_delimited_list = '' THEN ; 
-		LET LIB_CF_sort_delimited_list.sorted_list = 'Parameter [param_delimited_list] or [param_delimiter] is either NULL or empty' ; 
-		call LIB_CF_generate_fatal_error (LIB_CF_sort_delimited_list.sorted_list) ; 
-		EXIT SUB ; 
+	IF param_delimiter='' or IsNull (param_delimiter) OR IsNull (param_delimited_list) OR param_delimited_list = '' THEN ;
+		LET LIB_CF_sort_delimited_list.sorted_list = 'Parameter [param_delimited_list] or [param_delimiter] is either NULL or empty' ;
+		call LIB_CF_generate_fatal_error (LIB_CF_sort_delimited_list.sorted_list) ;
+		EXIT SUB ;
 	END IF ;
-	
-	IF param_delimiter = ',' THEN ; 
-		//call generate_warning ('Procedure [sort_delimited_list] parameter [param_delimiter] is a comma and will be substititued with a semicolon. All commas in the [param_delimited_list] will be replaced but re-instated upon completion ') ; 
+
+	IF param_delimiter = ',' THEN ;
+		//call generate_warning ('Procedure [sort_delimited_list] parameter [param_delimiter] is a comma and will be substititued with a semicolon. All commas in the [param_delimited_list] will be replaced but re-instated upon completion ') ;
 		LET local_reinstate_commas = 'Y';
 		let param_delimited_list = REPLACE (param_delimited_list, ',' , ';') ;
 		LET param_delimiter = ';' ;
 	ELSE
 		LET local_reinstate_commas = 'N';
 	END IF ;
-	
+
 	IF ISNULL (optional_distinct_list_YN) OR optional_distinct_list_YN <> 'Y' THEN ;
-		
+
 		LET local_distinct_list_YN = ' ' ;
-	
+
 	ELSE
 		LET local_distinct_list_YN = ' DISTINCT ' ;
-	
+
 	END IF ;
-	
+
 	// defaults
 	IF Right (param_delimited_list,1 ) = param_delimiter THEN ; let param_delimited_list=left (param_delimited_list,len (param_delimited_list)-1); let local_final_delimiter ='Y'; ELSE ; let local_final_delimiter = 'N' ; END IF ; // remove delimiter (it will be added back)
-	
+
 	let local_numer_of_fields = SubStringCount( param_delimited_list , param_delimiter ) ; // detect how many fields there are
-	
+
 	//call sub_trace_event ('Procedure [sort_delimited_list_using_bubble_sort] with param_delimited_list [$(param_delimited_list)] param_delimiter [$(param_delimiter)] local_numer_of_fields [$(local_numer_of_fields)]' ) ;
-	
+
 	// TODO - CREATE A FUNCTION THAT RETURNS A UNIQUE TEMP TABLE NAME
 	let local_temp_table_name = 'LIB_CF_sort_delimited_list.sort_delimited_list_using_inline_table' ; // must not clash with any existing table or else QVW will rename unpredictably
 
@@ -2284,36 +2285,36 @@ sub LIB_CF_sort_delimited_list (param_delimited_list, param_delimiter /* optiona
 	$(param_delimited_list)
 	]
 	;
-	
+
 	[$(local_temp_table_name)]: // make separate rows from each delimited value using SUBFIELD function
-	NOCONCATENATE LOAD 
+	NOCONCATENATE LOAD
 		SubField (field_name_sort_delimited_list_using_inline_table, '$(param_delimiter)') as field_name_sort_delimited_list_using_inline_table
-	RESIDENT 
+	RESIDENT
 		$(local_temp_table_name)_temp
 	;
-	
+
 	DROP TABLE '$(local_temp_table_name)_temp' ;
-	
+
 	[$(local_temp_table_name)_sorted]: // now sort it
-	NOCONCATENATE LOAD 
+	NOCONCATENATE LOAD
 	$(local_distinct_list_YN) // WILL BE POPULATED AT RUNTIME WITH EITHER A SPACE OR THE WORD 'DISTINCT'
 	*
-	RESIDENT 
+	RESIDENT
 		$(local_temp_table_name)
 	ORDER BY 1 ASC // basically use ORDER BY to sort the list
 	;
-	
+
 
 	DROP TABLE '$(local_temp_table_name)' ;
-	
+
 
 $(local_temp_table_name)_collapsed: // then get all those separate rows back into a single row
-	NOCONCATENATE Load 
+	NOCONCATENATE Load
 		concat(field_name_sort_delimited_list_using_inline_table, '$(param_delimiter)' ) as $(local_temp_table_name)_collapsed
-	RESIDENT 
+	RESIDENT
 		'$(local_temp_table_name)_sorted'
 	;
-	
+
 
 	//  and now PEEK that single row
 	let param_delimited_list = PEEK ('$(local_temp_table_name)_collapsed', 0, '$(local_temp_table_name)_collapsed' ) & param_delimiter ;
@@ -2326,7 +2327,7 @@ $(local_temp_table_name)_collapsed: // then get all those separate rows back int
 	if local_final_delimiter = 'N' THEN ; let param_delimited_list = LEFT (param_delimited_list, LEN(param_delimited_list)-1) ; ELSE /* dont add add it */ ; END IF;
 
 	LET LIB_CF_sort_delimited_list.sorted_list = param_delimited_list;
-	
+
 end sub ; // LIB_CF_sort_delimited_list
 
 ///$tab LIB_CF_tablename_has_potential_duplicate_in_model
@@ -2336,48 +2337,48 @@ SUB LIB_CF_tablename_has_potential_duplicate_in_model_YN (param_table_name /* lo
 
 	// GLOBAL VARS TODO
 	LET LIB_CF_tablename_has_potential_duplicate_in_model_YN.response_YN=;
-	
-	
+
+
 	IF $(LIB_CF_check_table_exists_YN(param_table_name)) = 'Y' THEN ;
-	
+
 		LET local_table_name_length 	= LEN (param_table_name);
-			
-			
+
+
 		FOR local_table_index = 1 to NoOfTables() ;
-		
+
 			LET local_table_name 			= TableName (local_table_index) ;
-				
+
 			IF LEFT (local_table_name, local_table_name_length) = param_table_name and MID (local_table_name,local_table_name_length+1, 1) = '-' then ;
-			
+
 				call LIB_CF_output_warning_message ('Table named [$(param_table_name)] may have a duplicate or badly named table [$(local_table_name)] in memory caused by a design or coding error. It may also be as expected. Tables named identically to one another but with "-NN" where NN is a series of numeric digits are usually caused by attempting to create a table that has the same name as an existing table. A missed DROP or RENAME command may be the cause') ;
 				LET LIB_CF_tablename_has_potential_duplicate_in_model_YN.response_YN = 'Y' ;
 				// todo - list all table names?
 			ELSE
 				LET LIB_CF_tablename_has_potential_duplicate_in_model_YN.response_YN = 'N' ;
 			END IF  ;
-			
+
 		NEXT local_table_index ;
 	ELSE
-	
+
 		LET LIB_CF_tablename_has_potential_duplicate_in_model_YN.response_YN = 'Procedure [if_tablename_has_potential_duplicate_in_model] was passed an non-existent table name [$(param_table_name)]. Please check LOG and code';
 		call LIB_CF_generate_fatal_error (LIB_CF_tablename_has_potential_duplicate_in_model.response_YN) ;
 		EXIT SCRIPT;
 		//LET if_tablename_has_potential_duplicate_in_model.response = 'BAD TABLE NAME';
-		
+
 	END IF ;
-	
+
 
 END SUB ;
 ///$tab Trace etc
-// 
+//
 // LIB 	= library
 // CF 	= Common Functions
 
 // ===========================================================================================
-SUB LIB_CF_trace (param_message /* LOCAL VARIABLES >>>> */, local_message) 
+SUB LIB_CF_trace (param_message /* LOCAL VARIABLES >>>> */, local_message)
 
 	LET local_message = REPLACE (param_message, ';', ' ') ; // semi-colons are fatal to TRACE commands
-	
+
 	TRACE $(local_message) ;
 
 END SUB ; // LIB_CF_trace
@@ -2399,10 +2400,10 @@ END SUB ;
 
 // =======================================================================================================================================
 SUB LIB_CF_output_datetime_to_log (/* local vars */ local_datetime)  ;
-	
+
 	call get_datetime ;
 	LET local_datetime = $((LIB_CF_get_datetime)) ;
-	call LIB_CF_trace ('LOG datetime: $(local_datetime)   (no millionths of a seconds value is available)') ; 
+	call LIB_CF_trace ('LOG datetime: $(local_datetime)   (no millionths of a seconds value is available)') ;
 
 end sub ;
 
@@ -2413,11 +2414,11 @@ sub  LIB_CF_log_code_section_header (optional_message /* local vars */ , local_l
 	// todo - will also number the sections (in case we want to tie debuggging to section numbers)
 	// todo - remember the previous section so a lOG entry for END OF SECTION [something] can be written
 	// todo - increase log indentation
-	
+
 	LET local_width = 100 ;
 	//LET local_text_line = REPEAT ( '*', local_width ) ;
 
-	CALL LIB_CF_trace ('') ;	
+	CALL LIB_CF_trace ('') ;
 	//CALL sub_trace_event (local_text_line) ;
 	CALL LIB_CF_output_double_line ;
 	CALL LIB_CF_trace ('*') ;
@@ -2432,16 +2433,16 @@ sub  LIB_CF_log_code_section_header (optional_message /* local vars */ , local_l
 	//TRACE $(local_len_message);
 	//& local_formatted_message ;
 
-	
+
 	CALL LIB_CF_trace (local_formatted_message) ;
 
 	CALL LIB_CF_trace ('*') ;
 	CALL LIB_CF_output_single_line ;
-	
+
 	//CALL LIB_CF_trace (local_text_line) ;
 	CALL LIB_CF_trace ('') ;
-		
-end sub ; // log_start_code_section 
+
+end sub ; // log_start_code_section
 
 // =======================================================================================================================================
 ///$tab Variable Output
@@ -2451,68 +2452,68 @@ SUB LIB_CF_output_variable_values  (param_variable_list, /* LOCAL VARS */ v_loca
 	set local_MAX_FORMAT_LENGTH		=30 ; // maximum number of characters allowed for formatting variable name. longer var names will be truncated.
 	let local_max_length			=0;
 	let local_output_complete_text	= ''; // emppty to start with
-	
+
 	let local_list_delimiter=',' ;
-				
+
 	let local_variable_list = TRIM (param_variable_list) ;
 	IF RIGHT (local_variable_list, 1) <> local_list_delimiter THEN ; LET local_variable_list = local_variable_list & local_list_delimiter; END IF;
-	
+
 	let local_number_of_variables = substringcount ( local_variable_list, local_list_delimiter) ;
 
 	// analyze variable name lengths first to get max string length of variable names
-	FOR local_variable_index = 1 to local_number_of_variables step 1 
-	
+	FOR local_variable_index = 1 to local_number_of_variables step 1
+
 		//TRACE local_variable_index=$(local_variable_index) ;
-		let local_variable_name = TRIM (SubField (local_variable_list, local_list_delimiter, local_variable_index)) ; 
+		let local_variable_name = TRIM (SubField (local_variable_list, local_list_delimiter, local_variable_index)) ;
 		IF LEN (local_variable_name) > local_max_length THEN ;
 			LET local_max_length  = LEN (local_variable_name) ;
 		END IF ;
-	
+
 	NEXT local_variable_index ;
-	
-	
-	FOR local_variable_index = 1 to local_number_of_variables step 1 
-	
+
+
+	FOR local_variable_index = 1 to local_number_of_variables step 1
+
 		//TRACE local_variable_index=$(local_variable_index) ;
 		let local_variable_name 	= TRIM (SubField (local_variable_list, local_list_delimiter, local_variable_index)) ;
 		let local_variable_value 	= '$' & '(' & local_variable_name & ')' ;
 		//let local_variable_value 	= local_variable_value ; ????
-		
+
 		LET local_formatting_spaces = repeat( ' ',  local_max_length - LEN (local_variable_name) ) ;
 		LET local_output_text = '    Variable [' & local_variable_name & local_formatting_spaces & '] has value [$(local_variable_value)' & ']' ;
-		
+
 		IF INDEX ( '$(local_variable_value)', ';') > 0 THEN ; LET local_output_text = local_output_text & ' (semi-colons have been replaced by spaces)'; END IF;
 		call LIB_CF_trace (local_output_text) ;
-		
+
 		LET local_output_complete_text = local_output_complete_text & local_output_text ;
-		
-	
+
+
 	NEXT local_variable_index ;
 
 
-	call LIB_CF_trace ('') ;    
+	call LIB_CF_trace ('') ;
 
-	LET LIB_CF_output_variable_values.running_variable_list = LIB_CF_output_variable_values.running_variable_list & local_variable_list ; 
+	LET LIB_CF_output_variable_values.running_variable_list = LIB_CF_output_variable_values.running_variable_list & local_variable_list ;
 
 END SUB;
 
 // todo - is having aliases a good idea?
 // alias to [LIB_CF_output_variable_values] to prevent typos in calling code or having to lookup exact name each time
 SUB LIB_CF_output_variable_value (param_variable_list);
-	
+
 	CALL LIB_CF_output_variable_values (param_variable_list);
 
 END SUB ;
 
 // alias to [LIB_CF_output_variable_values] to prevent typos in calling code or having to lookup exact name each time
 SUB LIB_CF_output_variable (param_variable_list);
-	
+
 	CALL LIB_CF_output_variable_values (param_variable_list);
 
 END SUB ;
 // alias to [LIB_CF_output_variable_values] to prevent typos in calling code or having to lookup exact name each time
 SUB LIB_CF_output_variables (param_variable_list);
-	
+
 	CALL LIB_CF_output_variable_values (param_variable_list);
 
 END SUB ;
@@ -2526,15 +2527,15 @@ SUB LIB_CF_output_all_variables ;
 	call LIB_CF_output_double_line ;
 	call LIB_CF_trace ('The following variables were of interest in the script so far (as per CALL to [SUB LIB_CF_output_variable_values])') ;
 	call LIB_CF_trace ('') ;
-	
-	
-	
+
+
+
 	CALL LIB_CF_output_variable_values ( LIB_CF_sort_delimited_list.sorted_list ) ;
 
 	CALL LIB_CF_output_single_line ;
 	call LIB_CF_trace ('') ;
-	
-	
+
+
 END SUB ;
 ///$tab Error trapping and writing
 
@@ -2542,23 +2543,23 @@ SUB LIB_CF_generate_fatal_error (param_message) ;
 
 	// todo
 	CALL LIB_CF_trace ('ERROR: The following error occurred and the script was terminated using code that forces QVW to stop. Please see QVW.LOG for more information : [$(param_message)]');
-	
+
 	LET LIB_CF_fatal_error_message_count = LIB_CF_fatal_error_message_count +1;
 
 //	// This LOAD statement below will fail causing a fatal error to propogate to QVW and then the user
 //	LIB_CF_generate_fatal_error.table:
 //	NOCONCATENATE
-//	LOAD 
-//		* 
+//	LOAD
+//		*
 //	FROM
 //		[.\LIB_CF_generate_fatal_error.PLEASE_SEE_QVW_LOG_FILE_ENTRIES_PRECEDING_THIS_ERROR_FOR_ADDITIONAL_INFORMATION.TXT]
 //		(txt)
 //	;
-	
+
 //
 //	SET FATAL_ERROR=RTRI$1/$2;
 	call LIB_CF_generate_fatal_error.SEE_QVW_LOG_FILE_MORE_INFO ; 	EXIT SCRIPT;
-//	
+//
 
 END SUB ;
 //
@@ -2569,27 +2570,27 @@ END SUB ;
 SUB LIB_CF_output_warning_message (param_message) ;
 
 	// todo - maybe extenal variable will indicate if message is shown inb MSGBOX
-	
+
 	CALL LIB_CF_trace ('WARNING: $(param_message)') ;
 
 	LET LIB_CF_output_warning_message.count = LIB_CF_output_warning_message.count +1;
 
- 
+
 END SUB ;
 
 SUB LIB_CF_output_debug_message (param_message) ;
 
 	IF LIB_CF_debug_mode_status = 'DEBUG_ON' THEN ;
-		
+
 		CALL LIB_CF_trace ('DEBUG: $(param_message)');
 		LET LIB_CF_debug_message_count = LIB_CF_debug_message_count + 1 ;
-	
+
 	ELSE
-	
+
 		// do nothing. DEBUG mode is not on so no debug stuff should be written to the LOG
-	
+
 	END IF ;
-	
+
 
 END SUB ;
 
@@ -2598,20 +2599,20 @@ END SUB ;
 sub LIB_CF_output_warning_message_dialog (param_message)
 
 
-	IF LIB_CF_interactive_mode_status ='INTERACTIVE_OFF' THEN 
-	
+	IF LIB_CF_interactive_mode_status ='INTERACTIVE_OFF' THEN
+
 		call LIB_CF_output_warning_message  ('In [SUB LIB_CF_output_warning_message_dialog] variable [LIB_CF_interactive_mode_status] is set to [INTERACTIVE_OFF] therefore no MS Windows dialog box will be shown') ;
-	
+
 	ELSE
-	
-		call LIB_CF_output_warning_message ('Procedure [LIB_CF_output_warning_message_dialog] called with message : ' & param_message) ; 
-		
+
+		call LIB_CF_output_warning_message ('Procedure [LIB_CF_output_warning_message_dialog] called with message : ' & param_message) ;
+
 		LIB_CF_output_warning_message_dialog.generate_warning_dialog_table_TEMP:
 		NoConcatenate
-		Load MsgBox('$(param_message)', 'WARNING', 'OK', 'ICONASTERISK') as generate_warning_dialog.field autogenerate 1; 
+		Load MsgBox('$(param_message)', 'WARNING', 'OK', 'ICONASTERISK') as generate_warning_dialog.field autogenerate 1;
 		// don't care about the response
 		DROP TABLE [LIB_CF_output_warning_message_dialog.generate_warning_dialog_table_TEMP] ;
-		
+
 	END IF ;
 
 END SUB ; // LIB_CF_output_warning_message_dialog
@@ -2620,21 +2621,21 @@ END SUB ; // LIB_CF_output_warning_message_dialog
 sub LIB_CF_output_YESNO_dialog (param_message /* local vars */ , local_field_value )
 // todo - should i ERROR out if this proc called while INTERACTIVE_OFF instead of a warning?
 
-	IF LIB_CF_interactive_mode_status = 'INTERACTIVE_OFF' THEN 
-	
+	IF LIB_CF_interactive_mode_status = 'INTERACTIVE_OFF' THEN
+
 		call LIB_CF_output_warning_message ('In [SUB LIB_CF_output_YESNO_dialog] variable [LIB_CF_interactive_mode_status] is set to [INTERACTIVE_OFF] therefore no MS Windows dialog box will be shown') ;
 		LET LIB_CF_output_YESNO_dialog__response_YN 	= 'N' ;
-		
-	ELSE 
-		
+
+	ELSE
+
 		LIB_CF_output_YESNO_dialog.generate_YESNO_dialog_table_TEMP:
 		NoConcatenate
-		Load MsgBox('$(param_message)', 'ICONQUESTION', 'YESNO', 'ICONASTERISK') as LIB_CF_output_YESNO_dialog.field autogenerate 1; 
-		
+		Load MsgBox('$(param_message)', 'ICONQUESTION', 'YESNO', 'ICONASTERISK') as LIB_CF_output_YESNO_dialog.field autogenerate 1;
+
 		LET local_field_value 						= PEEK ('LIB_CF_output_YESNO_dialog.field',0, 'LIB_CF_output_YESNO_dialog.generate_YESNO_dialog_table_TEMP') ;
 		LET LIB_CF_output_YESNO_dialog__response_YN 	= IF (local_field_value = 6, 'Y', 'N') ;
 		DROP TABLE [LIB_CF_output_YESNO_dialog.generate_YESNO_dialog_table_TEMP] ;
-		
+
 	END IF ;
 
 END SUB ;
@@ -2649,15 +2650,15 @@ END SUB ;
 SUB LIB_CF_NoOfRows(param_table_name ) ;
 
 	IF $(LIB_CF_does_table_exist_YN(param_table_name)) <> 'Y' THEN ;
-	
+
 		LET LIB_CF_NoOfRows__return_value = 'ERROR:CALL TO [LIB_CF_NoOfRows] TABLE DOES NOT EXIST [' & param_table_name & ']';
 		CALL LIB_CF_generate_fatal_error (LIB_CF_NoOfRows__return_value) ;
 		EXIT SCRIPT;
-		
+
 	ELSE
-	
+
 		LET LIB_CF_NoOfRows__return_value = NoOfRows ( param_table_name) ;
-	
+
 	END IF ;
 
 END SUB ;
@@ -2668,7 +2669,7 @@ END SUB ;
 // todo - be careful. this routines cannot know if calling code has spaces in leading or trailing positions within list items so cannot use TRIM on the values
 
 sub LIB_CF_compare_two_delimited_lists (param_list_1, param_list_2/* local variables */, local_value_to_search_for, local_delimiter, local_param_list_1, local_param_list_2, local_identical_lists_YN, local_subfield, local_list_1_index,  local_list_2_index, local_list_1_fieldcount, local_list_2_fieldcount, local_list_1_only, local_list_2_only, local_common_to_both, local_does_field_match)
-	
+
 	// todo - check if del
 	// global return vars
 	LET LIB_CF_compare_two_delimited_lists__common_to_both_lists = ;
@@ -2679,99 +2680,99 @@ sub LIB_CF_compare_two_delimited_lists (param_list_1, param_list_2/* local varia
 	LET LIB_CF_compare_two_delimited_lists__list_1_only_count			= ;
 	LET LIB_CF_compare_two_delimited_lists__list_2_only_count			= ;
 
-	
+
 	//call LIB_CF_trace ('SUB [LIB_CF_compare_two_delimited_lists] was passed the following parameters (all SEMICOLONS replaced with COMMAS for these LOG entries):' );
 	//call LIB_CF_output_variable_values ('param_list_1,param_list_2,local_delimiter');
 
 	LET local_delimiter = ';' ;
 	IF LEN(local_delimiter) <> 1 THEN ;
-	
+
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_compare_two_delimited_lists] can only accept single character non-space delimiters');
 		EXIT SCRIPT;
-		
+
 	END IF ;
-		
+
 	IF IsNULL (param_list_1) OR IsNULL (param_list_2)  THEN ; //OR trim (param_list_1)  = '' or trim (param_list_2)  = '' or IsNull (local_delimiter)  THEN // commented out : OR trim (local_delimiter) = ''
-	
+
 		//LET local_subfield = 'SUB [LIB_CF_compare_two_delimited_lists] is missing parameters. It was passed [$(param_list_1)], [$(param_list_2)] and [$(local_delimiter)]' ;
 		//LET _compare_two_delimited_lists.common_to_both_lists = local_subfield;
 		CALL LIB_CF_generate_fatal_error ('SUB [LIB_CF_compare_two_delimited_lists] is missing parameters. It was passed [$(param_list_1)], [$(param_list_2)]' ) ;
-		EXIT SUB ;	
+		EXIT SUB ;
 	END IF ;
 
 	// add any missing delimiters to beginning and end of parameters
-	let param_list_1 = TRIM (param_list_1) ; 
+	let param_list_1 = TRIM (param_list_1) ;
 //	IF LEFT (param_list_1, 1) <> local_delimiter THEN ; LET param_list_1 =  local_delimiter & param_list_1  ; END IF ;
 //	IF RIGHT (param_list_1, 1) <> local_delimiter THEN ; LET param_list_1 =  param_list_1  &  local_delimiter ; END IF ;
 
-	let param_list_2 = TRIM (param_list_2) ; 
+	let param_list_2 = TRIM (param_list_2) ;
 //	IF LEFT (param_list_2, 1) <> local_delimiter THEN ; LET param_list_2=  local_delimiter & param_list_2  ; END IF ;
 //	IF RIGHT (param_list_2, 1) <> local_delimiter THEN ; LET param_list_2 =  param_list_2  &  local_delimiter ; END IF ;
-	
+
 	// now with a delimeter surrounding each field the faster INDEX function can be used
 //	let local_list_1_fieldcount = substringcount( param_list_1 , local_delimiter ) ;
 //	let local_list_2_fieldcount = substringcount( param_list_2 , local_delimiter ) ;
-	
+
 //	LIB_CF_subfield_count
 	let local_list_1_fieldcount = $(LIB_CF_subfield_count(param_list_1,local_delimiter));
 	let local_list_2_fieldcount = $(LIB_CF_subfield_count(param_list_2,local_delimiter)) ;
-	
-	
-	let local_list_1_only = ''; 
+
+
+	let local_list_1_only = '';
 	let local_list_2_only = '' ;
 	let local_common_to_both = '' ;
-	
+
 	FOR local_list_1_index = 1 to local_list_1_fieldcount STEP 1 ;
-		
+
 		LET local_value_to_search_for = local_delimiter & SUBFIELD(param_list_1, local_delimiter , local_list_1_index)  & local_delimiter;
-		
+
 		IF INDEX (local_delimiter & param_list_2 & local_delimiter, local_value_to_search_for ) = 0 THEN //
 			let local_list_1_only = local_list_1_only & SUBFIELD(param_list_1, local_delimiter , local_list_1_index) & local_delimiter ;
-		ELSE 
+		ELSE
 			let local_common_to_both = local_common_to_both & SUBFIELD(param_list_1, local_delimiter , local_list_1_index) & local_delimiter ;
 		END IF
-		
+
 	NEXT local_list_1_index ;
-	
+
 	FOR local_list_2_index = 1 to local_list_2_fieldcount STEP 1 ;
-	
+
 		LET local_value_to_search_for = local_delimiter& SUBFIELD(param_list_2, local_delimiter , local_list_2_index) & local_delimiter;
-	
+
 		IF INDEX (local_delimiter & param_list_1 & local_delimiter, local_value_to_search_for  ) = 0 THEN //
 			let local_list_2_only = local_list_2_only & SUBFIELD(param_list_2, local_delimiter , local_list_2_index) & local_delimiter ;
-		ELSE 
+		ELSE
 			//let local_common_to_both = local_common_to_both & subfield(param_list_1, local_delimiter , local_list_1_index) & local_delimiter ;
 		END IF
-	
+
 	next local_list_2_index ;
-	
+
 	// remove any leading and trailing delimiters to prevent sending them back to caller
 	LET local_list_1_only = $(LIB_CF_trailing_delimiter(local_list_1_only,local_delimiter));
 	LET local_list_1_only = $(LIB_CF_leading_delimiter(local_list_1_only,local_delimiter));
-	
+
 	LET local_list_2_only = $(LIB_CF_trailing_delimiter(local_list_2_only,local_delimiter));
 	LET local_list_2_only = $(LIB_CF_leading_delimiter(local_list_2_only,local_delimiter));
-	
+
 	LET local_common_to_both = $(LIB_CF_trailing_delimiter(local_common_to_both,local_delimiter));
 	LET local_common_to_both = $(LIB_CF_leading_delimiter(local_common_to_both,local_delimiter));
-	
-	
-	// return values with counts	
+
+
+	// return values with counts
 	LET LIB_CF_compare_two_delimited_lists__common_to_both_lists 		= local_common_to_both;
 	LET LIB_CF_compare_two_delimited_lists__common_to_both_lists_count	= $(LIB_CF_subfield_count(LIB_CF_compare_two_delimited_lists__common_to_both_lists,local_delimiter));
 
 	let LIB_CF_compare_two_delimited_lists__list_1_only 					= local_list_1_only;
 	LET LIB_CF_compare_two_delimited_lists__list_1_only_count			= $(LIB_CF_subfield_count(LIB_CF_compare_two_delimited_lists__list_1_only,local_delimiter));
 	IF LIB_CF_compare_two_delimited_lists__list_1_only_count			= 0 THEN ; LET LIB_CF_compare_two_delimited_lists__list_1_only = ''; END IF ;
-	
+
 	let LIB_CF_compare_two_delimited_lists__list_2_only 				= local_list_2_only;
 	LET LIB_CF_compare_two_delimited_lists__list_2_only_count			= $(LIB_CF_subfield_count(LIB_CF_compare_two_delimited_lists__list_2_only,local_delimiter));
 	IF LIB_CF_compare_two_delimited_lists__list_2_only_count			= 0 THEN ; LET LIB_CF_compare_two_delimited_lists__list_2_only = ''; END IF ;
-		
+
 END SUB ;
 
 // IF LIB_CF_compare_two_delimited_lists.list_2_only_count <> 0 THEN ;
-///$tab  | 
+///$tab  |
 ///$tab LIB_CF_table_compare
 
 sub LIB_CF_table_compare_generate_LOAD_AS (param_table_name, param_field_name_list, param_field_name_list_count  /* local vars */ ,local_field_name,local_load_as,local_crlf,local_field_index );
@@ -2781,90 +2782,90 @@ sub LIB_CF_table_compare_generate_LOAD_AS (param_table_name, param_field_name_li
 
 	for local_field_index = 1 to param_field_name_list_count STEP 1 ;
 		LET local_field_name = SUBFIELD (param_field_name_list, local_delimiter, local_field_index);
-		
+
 
 	 	LET local_load_as= local_load_as & local_crlf & param_table_name & '.' & local_field_name & ' AS ' & local_field_name;
 		IF local_field_index < param_field_name_list_count THEN ;
 			local_load_as= local_load_as & ', ' ;
 		ELSE
 			// do nothing
-		
+
 		END IF ;
-		
+
 	NEXT local_field_index ;
 
 	LET LIB_CF_table_compare_generate_LOAD_AS__return = local_load_as;
-	
+
 END SUB ;
 
 
 SUB LIB_CF_table_compare_generate_warning (param_warning_message);
 
 	CALL LIB_CF_trace ('WARNING: ' & param_warning_message);
-	
+
 	LET LIB_CF_table_compare__warning_count 	= LIB_CF_table_compare__warning_count + 1 ;
 	LET LIB_CF_table_compare__warning_messages 	= LIB_CF_table_compare__warning_messages & param_warning_message & ';';
-		
-END SUB ;	
-	
+
+END SUB ;
+
 SUB LIB_CF_table_compare_generate_error (param_error_message);
 
 	CALL LIB_CF_trace ('ERROR: ' & param_error_message);
 	LET LIB_CF_table_compare__error_count 		= LIB_CF_table_compare__error_count + 1 ;
 	LET LIB_CF_table_compare__error_messages 	= LIB_CF_table_compare__error_messages & param_error_message & ';';
-	
-END SUB ;	
+
+END SUB ;
 
 
 // todo - handle XLS - see [SUB LIB_CF_describe_other_data_file] for detection and standard LOAD format-spec
 
 SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to_ignore_1, param_file_2, param_file_label_2, param_file_fields_to_ignore_2 /* local vars */ ,local_file_format_spec_1, local_file_format_spec_2,local_file_1,local_file_type_1,local_file_extension_1,local_file_label_1,local_file_fields_to_ignore_1,local_file_2,local_file_type_2,local_file_label_2,local_file_fields_to_ignore_2,local_delimiter,local_file_table_name_1,local_file_row_count_1,local_file_filename_1,local_file_modified_1,local_file_size_1,local_file_number_of_fields_1,local_file_full_field_name_list_1,local_file_folder_1,local_file_table_name_2,local_file_row_count_2,local_file_filename_2,local_file_modified_2,local_file_size_2,local_file_number_of_fields_2,local_file_full_field_name_list_2,local_file_folder_2,local_file_field_names_to_compare_1,local_file_field_names_to_compare_1_count,local_file_field_names_to_compare_2,local_file_field_names_to_compare_2_count,local_LOAD_AS_1,local_LOAD_AS_2,local_file_extension_2 );
-	
-	
+
+
 	// GLOBAL VARS
 	LET LIB_CF_table_compare__file_label_1 =;
 	LET LIB_CF_table_compare__file_label_2 =;
 	/*
-	
-	
+
+
 	*/
 	// copy params to to local vars
 	LET local_file_1					= param_file_1;
 	LET local_file_extension_1 			= UPPER ($(LIB_CF_get_just_the_extension(local_file_1)) );
 	LET local_file_label_1				= param_file_label_1;
 	LET local_file_fields_to_ignore_1	= param_file_fields_to_ignore_1;
-	
+
 	// extensions is file extension but _type_ is what will be used in the LOAD command later (.CSV and .TXT are both considered (TXT) in QVW)
 	IF local_file_extension_1 = 'CSV' OR local_file_extension_1 = 'TXT' THEN
 		LET local_file_type_1 = 'TXT';
 	ELSE
 		LET local_file_type_1 = local_file_extension_1 ;
-	END IF ; 
-	
+	END IF ;
+
 	LET local_file_2					= param_file_2;
 	LET local_file_extension_2 			= UPPER ( $(LIB_CF_get_just_the_extension(local_file_2)) );
 	LET local_file_label_2				= param_file_label_2;
 	LET local_file_fields_to_ignore_2	= param_file_fields_to_ignore_2;
-	
+
 	// extensions is file extension but _type_ is what will be used in the LOAD command later (.CSV and .TXT are both considered (TXT) in QVW)
 	IF local_file_extension_2 = 'CSV' OR local_file_extension_2 = 'TXT' THEN
 		LET local_file_type_2 = 'TXT';
 	ELSE
 		LET local_file_type_2 = local_file_extension_2 ;
-	END IF ; 
-	
-	
+	END IF ;
+
+
 	// other vars local these compare QVD SUBs but are actually global vars
 	LET LIB_CF_table_compare__warning_count 	= 0 ;
 	LET LIB_CF_table_compare__warning_messages 	= '' ;
 	LET LIB_CF_table_compare__error_count 		= 0 ;
 	LET LIB_CF_table_compare__error_messages 	=  '';
-	
-	// general local vars 
-	LET local_delimiter 						= ';' ;	
-	
-	
-	
+
+	// general local vars
+	LET local_delimiter 						= ';' ;
+
+
+
 	// ------------------------------------------------------------------------------------------------------------------------
 	// check if files exist and what their types are
 	IF $(LIB_CF_does_file_exist_YN(local_file_1)) = 'N' THEN ;
@@ -2872,21 +2873,21 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 		EXIT SCRIPT ;
 		// todo - handle this differently when converting code to batch mode
 	END IF ;
-	
+
 	if NOT (local_file_type_1 = 'QVD' OR local_file_type_1 = 'TXT') THEN
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare] type [$(local_file_type_1)] of file is not a QVD or CSV : $(local_file_1)');
 		EXIT SCRIPT ;
 		// todo - handle this differently when handling other types
 	END IF ;
-	
-	
+
+
 	// check if files exist and what their types are
 	IF $(LIB_CF_does_file_exist_YN(local_file_2)) = 'N' THEN ;
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare} file not found : $(local_file_2)');
 		EXIT SCRIPT ;
 		// todo - handle this differently when converting code to batch mode
 	END IF ;
-	
+
 	if NOT (local_file_type_2 = 'QVD' OR local_file_type_2 = 'TXT') THEN
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare] type [$(local_file_type_2)] of file is not a QVD or CSV : $(local_file_2)');
 		EXIT SCRIPT ;
@@ -2896,7 +2897,7 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	// ------------------------------------------------------------------------------------------------------------------------
 
 	SWITCH local_file_type_1
-	CASE 'QVD'		
+	CASE 'QVD'
 		// METADATA
 		CALL LIB_CF_describe_qvd_file (local_file_1);
 		LET local_file_table_name_1 					= LIB_CF_describe_qvd_file.table_name ;
@@ -2907,11 +2908,11 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 		LET local_file_number_of_fields_1 				= LIB_CF_describe_qvd_file.number_of_fields;
 		LET local_file_full_field_name_list_1			= LIB_CF_describe_qvd_file.field_names;
 		LET local_file_folder_1 						= LIB_CF_describe_qvd_file.folder;
-	
+
 	CASE 'TXT'
-		
+
 		call LIB_CF_describe_other_data_file (local_file_1, 'Y') ; // 'Y' means that the row count is needed and thats oly possible for non-QVD files if file is loaded
-		
+
 		// NOTE THERE IS NO TABLE NAME (AND DEPENDING ON PARAM [param_optional_count_number_of_rows_YN] NO ROW COUNT
 		LET local_file_filename_1 						= LIB_CF_describe_other_data_file.filename;
 		LET local_file_table_name_1 					= 'TXT_TABLE_NAME_NOT_AVAIL_' & $(LIB_CF_get_just_the_filename_no_extension(local_file_filename_1)) ;
@@ -2925,9 +2926,9 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	DEFAULT
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare} FILE TYPE PROCESSING');
 		EXIT SCRIPT ;
-	
+
 	END SWITCH;
-	
+
 //	CALL LIB_CF_describe_qvd_file (local_file_2);
 //	LET local_file_table_name_2 					= LIB_CF_describe_qvd_file.table_name ;
 //	LET local_file_row_count_2 						= LIB_CF_describe_qvd_file.number_of_rows;
@@ -2940,7 +2941,7 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 
 
 	SWITCH local_file_type_2
-	CASE 'QVD'		
+	CASE 'QVD'
 		// METADATA
 		CALL LIB_CF_describe_qvd_file (local_file_2);
 		LET local_file_table_name_2 					= LIB_CF_describe_qvd_file.table_name ;
@@ -2951,9 +2952,9 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 		LET local_file_number_of_fields_2 				= LIB_CF_describe_qvd_file.number_of_fields;
 		LET local_file_full_field_name_list_2			= LIB_CF_describe_qvd_file.field_names;
 		LET local_file_folder_2 						= LIB_CF_describe_qvd_file.folder;
-	
+
 	CASE 'TXT'
-		
+
 		call LIB_CF_describe_other_data_file (local_file_2, 'Y') ; // 'Y' means that the row count is needed and thats oly possible for non-QVD files if file is loaded
 
 		// NOTE THERE IS NO TABLE NAME (AND DEPENDING ON PARAM [param_optional_count_number_of_rows_YN] NO ROW COUNT
@@ -2970,29 +2971,29 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	DEFAULT
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare} FILE TYPE PROCESSING');
 		EXIT SCRIPT ;
-	
+
 	END SWITCH;
 
 
-	
+
 	// calculate [local_file_field_names_to_compare_1] i.e. [local_file_full_field_name_list_1] once [local_file_fields_to_ignore_1] has been removed
-	CALL LIB_CF_compare_two_delimited_lists (local_file_full_field_name_list_1, local_file_fields_to_ignore_1, local_delimiter);  
-	
+	CALL LIB_CF_compare_two_delimited_lists (local_file_full_field_name_list_1, local_file_fields_to_ignore_1, local_delimiter);
+
 	LET local_file_field_names_to_compare_1 		= LIB_CF_compare_two_delimited_lists__list_1_only ;
 	LET local_file_field_names_to_compare_1_count 	= LIB_CF_compare_two_delimited_lists__list_1_only_count;
-	
-	CALL LIB_CF_compare_two_delimited_lists (local_file_full_field_name_list_2, local_file_fields_to_ignore_2, local_delimiter); 
-	
+
+	CALL LIB_CF_compare_two_delimited_lists (local_file_full_field_name_list_2, local_file_fields_to_ignore_2, local_delimiter);
+
 	LET local_file_field_names_to_compare_2 		= LIB_CF_compare_two_delimited_lists__list_1_only ; // NOTE: these statements look weird since they assign a _1 to a _2 variable but the [CALL LIB_CF_compare_two_delimited_lists] presents _2 and not _1
 	LET local_file_field_names_to_compare_2_count 	= LIB_CF_compare_two_delimited_lists__list_1_only_count;
 //	LET local_file_field_names_to_compare_2 		= LIB_CF_compare_two_delimited_lists__list_2_only ;
 //	LET local_file_field_names_to_compare_2_count 	= LIB_CF_compare_two_delimited_lists__list_2_only_count;
 
 	// todo - check if there are no remaining fields to compare
-	
+
 	//call LIB_CF_output_variable_values ('local_file_field_names_to_compare_1,local_file_field_names_to_compare_2');
-	
-	
+
+
 	// TODO- MAY BE COMPLICATED WHAT TO USE
 	IF TRIM (Local_file_label_1) = '' THEN ;
 		let local_file_label_1 = 'FILE1' ;
@@ -3000,58 +3001,58 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	IF TRIM (Local_file_label_2) = '' THEN ;
 		let local_file_label_2 = 'FILE2' ;
 	END IF ;
-	
-	
+
+
 	CALL LIB_CF_trace ('File 1 ID : $(local_file_label_1)')
 	CALL LIB_CF_trace ('File 2 ID : $(local_file_label_2)')
-	
-	
+
+
 	// ----------------------------------------------------- ----------------------------------------------------- ----------------------------------------------------- -----------------------------------------------------
 	// started metadata analysis
 	// ----------------------------------------------------- ----------------------------------------------------- ----------------------------------------------------- -----------------------------------------------------
-	
-	
-	CALL LIB_CF_compare_two_delimited_lists (local_file_field_names_to_compare_1, local_file_field_names_to_compare_2, local_delimiter); 
-	
+
+
+	CALL LIB_CF_compare_two_delimited_lists (local_file_field_names_to_compare_1, local_file_field_names_to_compare_2, local_delimiter);
+
 	IF NOT (LIB_CF_compare_two_delimited_lists__list_1_only_count = 0 and LIB_CF_compare_two_delimited_lists__list_2_only_count = 0)  THEN
-			//error - no fields in common once 'fields to ignore list has been adjusted for' 
+			//error - no fields in common once 'fields to ignore list has been adjusted for'
 			CALL LIB_CF_table_compare_generate_error ('After applying the ignore field names lists, the remaining field names to compare are not identical. Any further comparison would not make sense');
 	//		call LIB_CF_output_variable_values ('local_file_full_field_name_list_1,local_file_field_names_to_compare_1,local_file_fields_to_ignore_1');
 	//		call LIB_CF_output_variable_values ('local_file_full_field_name_list_2,local_file_field_names_to_compare_2,local_file_fields_to_ignore_2');
 	ELSE
-	
+
 		//warning - field name *sequence* is diff despite all non-ignored field names being same
 		IF local_file_field_names_to_compare_1 <> local_file_field_names_to_compare_2 THEN ;
 			CALL LIB_CF_table_compare_generate_warning ( 'Field names in both tables are not in the same sequence. This may be acceptable or may be a symptom of an unplanned code change');
 		END IF ;
-		
+
 	END IF ;
-	
+
 	if local_file_field_names_to_compare_1 = '' OR ISNULL  (local_file_field_names_to_compare_1)  then ;
 		CALL LIB_CF_table_compare_generate_error ('After ignore field names [$(local_file_fields_to_ignore_1)] there are no field names left to compare in [$(local_file_label_1)]. Any further comparison would not make sense');
 	END IF ;
 	if local_file_field_names_to_compare_2 = '' OR ISNULL (local_file_field_names_to_compare_2) THEN ;
 		CALL LIB_CF_table_compare_generate_error ('After ignore field names [$(local_file_fields_to_ignore_2)] there are no field names left to compare in [$(local_file_label_2)]. Any further comparison would not make sense');
 	END IF ;
-	
-	
-	
+
+
+
 	/*
 	identify 'table' type
 	if type = QVD then LOAD (qvd) into memory
 	if type = table then make it available (rename table?)
 	if type = anything else then load (TODO-allow a parameter to be passed containing CSV, XLS(x) instructions e.g. "labels" etc
 	*/
-	
+
 	//warning- table names are different (can only do this for some types)
 	IF local_file_table_name_1 <> local_file_table_name_2 THEN ;
-		CALL LIB_CF_table_compare_generate_warning ( 'Logical table names are different : [$(local_file_label_1) = $(local_file_table_name_1)] and [$(local_file_label_2) = $(local_file_table_name_2)]' );	
+		CALL LIB_CF_table_compare_generate_warning ( 'Logical table names are different : [$(local_file_label_1) = $(local_file_table_name_1)] and [$(local_file_label_2) = $(local_file_table_name_2)]' );
 	END IF ;
 	//warning - row counts are different
 	IF local_file_row_count_1 <> local_file_row_count_2 THEN ;
-		CALL LIB_CF_table_compare_generate_warning ( 'Row counts are different : [$(local_file_label_1) = $(local_file_row_count_1)] and [$(local_file_label_2) = $(local_file_row_count_2)]' );	
+		CALL LIB_CF_table_compare_generate_warning ( 'Row counts are different : [$(local_file_label_1) = $(local_file_row_count_1)] and [$(local_file_label_2) = $(local_file_row_count_2)]' );
 	END IF ;
-	
+
 	//error - no rows in one or either table
 	IF local_file_row_count_1 = 0 THEN ;
 		CALL LIB_CF_table_compare_generate_error ('Table [$(local_file_label_1)] is empty. A comparison to table [$(local_file_label_2)] would not make sense');
@@ -3059,62 +3060,62 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	IF local_file_row_count_2 = 0 THEN ;
 		CALL LIB_CF_table_compare_generate_error ('Table [$(local_file_label_2)] is empty. A comparison to table [$(local_file_label_1)] would not make sense');
 	END IF ;
-	
+
 	// ----------------------------------------------------- ----------------------------------------------------- ----------------------------------------------------- -----------------------------------------------------
 	// completed metadata analysis
 	// ----------------------------------------------------- ----------------------------------------------------- ----------------------------------------------------- -----------------------------------------------------
-	
+
 	call LIB_CF_output_variable_values ('local_file_field_names_to_compare_1,local_file_field_names_to_compare_2');
-	
+
 	IF LIB_CF_table_compare.error_count >0 THEN ;
-	
+
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare] has [$(LIB_CF_table_compare.error_count)] errors and the script cannot continue : $(LIB_CF_table_compare.error_messages)');
-		
+
 		EXIT SCRIPT ; // may do EXIT SUB instead when this is better integrated
-	
+
 	END IF ;
-	
+
 	//exit script;
-	
+
 	IF LIB_CF_table_compare.warning_count >0 THEN ;
-	
+
 		CALL LIB_CF_output_variable_values ('LIB_CF_table_compare.warning_messages');
 		sleep 1000;
-		
+
 		call LIB_CF_output_YESNO_dialog ('SUB [LIB_CF_table_compare] has [LIB_CF_table_compare.warning_count] warnings. See QVW LOG for more info. Do you want to continue?');
 		//call LIB_CF_generate_fatal_error ('SUB [LIB_CF_table_compare] has [$(LIB_CF_table_compare.error_count)] errors and the script cannot continue : $(LIB_CF_table_compare.error_messages)');
 		IF LIB_CF_output_YESNO_dialog__response_YN = 'N' THEN ;
-		
+
 			EXIT SCRIPT ; // may do dialog box etc
 		END IF ;
-		
+
 	END IF ;
-	
+
 	// ----------------------------------------------------- ----------------------------------------------------- ----------------------------------------------------- -----------------------------------------------------
-	
-	
-	
-	
+
+
+
+
 	// Enable field renaming [table.field] for all fields except [SOURCE_ID]
 	QUALIFY *; UNQUALIFY SOURCE_ID;
-	
-	// TODO TODO TODO TODO TODO TODO TODO 
-	
+
+	// TODO TODO TODO TODO TODO TODO TODO
+
 	// HAVE TO HANDLE UNICODE CHARACTERS IN FIELD NAMES E.G. CSV AND PROBABKY TXT FILES
-	
-	// TODO TODO TODO TODO TODO TODO TODO 
-	
-	
+
+	// TODO TODO TODO TODO TODO TODO TODO
+
+
 	IF local_file_type_1 = 'TXT' THEN
-		
+
 		SET local_file_format_spec_1 = TXT, UTF8, embedded labels, delimiter is ',', msq ;
 	ELSE
 		SET local_file_format_spec_1 = QVD;
-		
+
 	END IF ;
-	
+
 	call LIB_CF_output_warning_message ('The following LOAD statement uses the default format shown here (UTF8, TXT). The code needs to be made more generic.');
-	
+
 	// todo - their source may be qvd, in-memory, csv, xls(x), etc
 //	T1:
 	[$(local_file_table_name_1)]:
@@ -3128,13 +3129,13 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	FROM
 		[$(local_file_1)] ( $(local_file_format_spec_1) ) // todo - handle diff types
 	;
-	
+
 	IF local_file_type_2 = 'TXT' THEN
-		
+
 		SET local_file_format_spec_2 = TXT, UTF8, embedded labels, delimiter is ',', msq ;
 	ELSE
 		SET local_file_format_spec_2 = QVD;
-		
+
 	END IF ;
 //	T2:
 	[$(local_file_table_name_2)]:
@@ -3148,76 +3149,76 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 	FROM
 		[$(local_file_2)] ( $(local_file_format_spec_2) ) // todo - handle diff types
 	;
-	
+
 	UNQUALIFY *; // TURN IN OFF
-	
+
 	call LIB_CF_describe_tables_detailed_list ('') ;
-	
-	
+
+
 	/*
-	TODO TODO TODO TODO 
+	TODO TODO TODO TODO
 	compare data- quick'n'dirty:
 	warning - FieldValueCount for each field is different
 	error - the distinct list of values for identical fields but on diff tables is diff
 	TODO
 	*/
-	
-	
-	
+
+
+
 	/*
 	compare data - slower
 	get data into memory with SOURCE_ID
-	
+
 	*/
-	
-	
+
+
 	call LIB_CF_table_compare_generate_LOAD_AS (local_file_table_name_1, local_file_field_names_to_compare_1, local_file_field_names_to_compare_1_count) ;
 	LET local_LOAD_AS_1 = LIB_CF_table_compare_generate_LOAD_AS__return ;
-	
+
 	call LIB_CF_table_compare_generate_LOAD_AS (local_file_table_name_2, local_file_field_names_to_compare_2, local_file_field_names_to_compare_2_count) ;
 	LET local_LOAD_AS_2 = LIB_CF_table_compare_generate_LOAD_AS__return ;
-	
+
 	call LIB_CF_output_variable_values ('local_LOAD_AS_1,local_LOAD_AS_2');
-	
+
 	// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	COMBINED_TABLE:
 	//NoConcatenate // I cannto state this but don't want it to concatenate with any prev loaded table
-	CROSSTABLE 
+	CROSSTABLE
 		( FIELD_NAME, VALUE, 2 /* Two fixed fields i.e. SOURCE_ID + TABLE_NAME */ )
-	LOAD 
+	LOAD
 		'$(local_file_table_name_1)' 			AS TABLE_NAME,
 		SOURCE_ID		AS SOURCE_ID,
 		$(local_LOAD_AS_1)
-	//	T1.F1 AS F1, 
-	//	T1.F2 AS F2 
+	//	T1.F1 AS F1,
+	//	T1.F2 AS F2
 	RESIDENT
 		'$(local_file_table_name_1)'
 	;
-	
+
 	// I do want assumed CONCATENATE with (any) table that has identical field names i.e. COMBINED_TABLE above
-	CROSSTABLE 
+	CROSSTABLE
 		( FIELD_NAME, VALUE, 2 /* Two fixed fields i.e. SOURCE_ID + TABLE_NAME */ )
-	LOAD 
+	LOAD
 		'$(local_file_table_name_2)' 			AS TABLE_NAME,
 		SOURCE_ID,
 		$(local_LOAD_AS_2)
-	//	T2.F1 AS F1,  
+	//	T2.F1 AS F1,
 	//	T2.F2 AS F2
-	
+
 	RESIDENT
 		'$(local_file_table_name_2)'
 	;
-	
+
 	//CALL LIB_CF_describe_table ('COMBINED_TABLE'); exit script;
-	
+
 	call LIB_CF_describe_tables_detailed_list (''); //exit script;
-	
-	
+
+
 	// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	
+
 	MISMATCHES_FOUND_TABLE:
 	NoConcatenate
-	LOAD 
+	LOAD
 		*
 	WHERE
 		// todo - <> 2 and review use of DISTINCT in ROW_CUNT BELOW
@@ -3239,12 +3240,12 @@ SUB LIB_CF_table_compare (param_file_1, param_file_label_1, param_file_fields_to
 		,
 		VALUE
 	;
-	
+
 	drop fields [FIELD_NAME],[VALUE] from [COMBINED_TABLE] ;
-	
+
 	LET LIB_CF_table_compare__file_label_1 = local_file_label_1;
 	LET LIB_CF_table_compare__file_label_2 = local_file_label_2;
-	
+
 END SUB ; // LIB_CF_table_compare
 
 
@@ -3297,16 +3298,16 @@ SUB LIB_CF_initialize_global_variables ;
 	// These are global variables used and maintained by the various SUBs
 	// Other global variables are created by the SUBs for the purposes of returning values to the calling code. They are initialized in their respective SUBs
 	LET LIB_CF_output_warning_message.count		= 0;
-	
+
 	LET LIB_CF_fatal_error_message_count		= 0;
-	
+
 	LET LIB_CF_debug_message_count				= 0;
-	
+
 	LET LIB_CF_debug_mode_status 				= 'DEBUG_ON' ; // todo - SET VIA EXTERNAL PARAM
 	LET LIB_CF_interactive_mode_status			= 'INTERACTIVE_ON' ; // todo- SET VIA EXTERNAL PARAM
-	
+
 	LET LIB_CF_trace_output_level 				= 'ALL' ;
-	
+
 	LET LIB_CF_output_variable_values.running_variable_list = '' ; // empty
 
 
@@ -3340,109 +3341,109 @@ SUB LIB_CF_describe_other_data_file (param_file, param_optional_count_number_of_
 	// local copies to protect calling variables
 	LET local_param_file 									= param_file ;
 	LET local_param_optional_count_number_of_rows_YN 		= param_optional_count_number_of_rows_YN;
-	
+
 	// check file exists. fatal if not
 	IF $(LIB_CF_does_file_exist_YN(param_file)) <> 'Y' THEN ;
-	
+
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_describe_other_data_file] file doesnt exist [$(param_file)]' ) ;
 		EXIT SCRIPT;
-		
+
 	END IF ;
-	
+
 	// get file level metadata
 	let LIB_CF_describe_other_data_file.modified_datetime 	= FILETIME( '$(param_file)' );
 	let LIB_CF_describe_other_data_file.size_bytes 			= num ( FileSize(param_file), '###,###,###,###') ;
 	let LIB_CF_describe_other_data_file.filename 			= $(LIB_CF_get_just_the_filename(param_file));
 	LET LIB_CF_describe_other_data_file.file_extension		= UPPER ($(LIB_CF_get_just_the_extension(LIB_CF_describe_other_data_file.filename)) );
 	let LIB_CF_describe_other_data_file.folder 				= $(LIB_CF_get_just_the_folder(param_file));
-	
+
 	call LIB_CF_output_warning_message ('The following LOAD statement uses the default format shown here [ TXT/CSV=(UTF8, TXT) ] or [XLS=(biff, embedded labels, table is Sheet1$) ]. The code needs to be made more generic.');
-	
+
 	IF LIB_CF_describe_other_data_file.file_extension = 'XLS' THEN
 	// QVW chart export to XLS uses the following LOAD format (biff, embedded labels, table is Sheet1$)
 		LET local_load_format_spec = 'biff, embedded labels, table is Sheet1$'; // (biff, embedded labels, table is Sheet1$)
 	ELSE
 		LET local_load_format_spec = 'UTF8, TXT';
 	END IF ;
-	
-	
+
+
 	SET ErrorMode=0;
 	// load first row ONLY for labels
-	if param_optional_count_number_of_rows_YN = 'Y' THEN 
-	
+	if param_optional_count_number_of_rows_YN = 'Y' THEN
+
 		LIB_CF_describe_other_data_file_TEMP:
-		//FIRST 1 // <<<<<<<<<<<<<< We are assuming that the first row contains field names 
+		//FIRST 1 // <<<<<<<<<<<<<< We are assuming that the first row contains field names
 		NoConcatenate
-		LOAD 
+		LOAD
 			*
 		FROM
-			[$(local_param_file)] ( $(local_load_format_spec) ) 
+			[$(local_param_file)] ( $(local_load_format_spec) )
 		;
-	
-	
-	ELSE 
-		
+
+
+	ELSE
+
 		LIB_CF_describe_other_data_file_TEMP:
-		FIRST 1 // <<<<<<<<<<<<<< We are assuming that the first row contains field names 
+		FIRST 1 // <<<<<<<<<<<<<< We are assuming that the first row contains field names
 		NoConcatenate
-		LOAD 
+		LOAD
 			*
 		FROM
-			[$(local_param_file)] (  $(local_load_format_spec)  ) 
+			[$(local_param_file)] (  $(local_load_format_spec)  )
 		;
-	
+
 	END IF ;
-			
-	IF ScriptError <> 0 THEN 
+
+	IF ScriptError <> 0 THEN
 
 		call LIB_CF_generate_fatal_error ('SUB [LIB_CF_describe_other_data_file] unable to open or properly load the file e.g. no field names on first line etc : [$(param_file)]' ) ;
 		EXIT SCRIPT;
-	
+
 	END IF ;
-	
+
 	SET ErrorMode=1; // normal service resumed
-	
+
 	/// extract field names from that table
 	CALL LIB_CF_get_table_field_names ( 'LIB_CF_describe_other_data_file_TEMP' );
 	LET local_field_name_list 			= LIB_CF_get_table_field_names.field_names ;
 	LET local_field_name_list_count 	= LIB_CF_get_table_field_names.field_names_count ;
-	
-	// optional - IF param_optional_count_number_of_rows_YN  = 'Y' THEN load all data, get row count, 
+
+	// optional - IF param_optional_count_number_of_rows_YN  = 'Y' THEN load all data, get row count,
 	// todo - return to this
 	IF param_optional_count_number_of_rows_YN = 'Y' THEN ;
-	
-		LET LIB_CF_describe_other_data_file.number_of_rows  = NoOfRows ('LIB_CF_describe_other_data_file_TEMP'); 
-		
+
+		LET LIB_CF_describe_other_data_file.number_of_rows  = NoOfRows ('LIB_CF_describe_other_data_file_TEMP');
+
 	ELSE
-		
+
 		//LET LIB_CF_describe_other_data_file.number_of_rows  = 'UNABLE TO DETERMINE due to parameter [param_optional_count_number_of_rows_YN] in SUB [LIB_CF_describe_other_data_file] disallowing the loading of the full contents of the file');
 		LET LIB_CF_describe_other_data_file.number_of_rows  = 'N/A';
-		
+
 	END IF ;
-	
-	
+
+
 	LET LIB_CF_describe_other_data_file.number_of_fields 	= local_field_name_list_count;
-	
-	// REMOVED REPLACE so that it is returned as item1;item2; 
+
+	// REMOVED REPLACE so that it is returned as item1;item2;
 	//LET LIB_CF_describe_other_data_file.field_name_list 	= REPLACE (local_field_name_list, ';', ', ');;
 	LET LIB_CF_describe_other_data_file.field_name_list 	= local_field_name_list ;
-	
+
 	DROP TABLE [LIB_CF_describe_other_data_file_TEMP] ;
-		
+
 	call LIB_CF_trace ('') ;
 	call LIB_CF_trace ('Filename    : $(LIB_CF_describe_other_data_file.filename)') ;
 	call LIB_CF_trace ('Folder      : [$(LIB_CF_describe_other_data_file.folder)]') ;
 	call LIB_CF_trace ('Modified    : $(LIB_CF_describe_other_data_file.modified_datetime)');
-	call LIB_CF_trace ('Size bytes  : $(LIB_CF_describe_other_data_file.size_bytes)');	
-	call LIB_CF_trace ('Field Count : $(LIB_CF_describe_other_data_file.number_of_fields)');	
-	call LIB_CF_trace ('Field names : $(LIB_CF_describe_other_data_file.field_name_list)');	
-	call LIB_CF_trace ('Row count   : $(LIB_CF_describe_other_data_file.number_of_rows)');	
-	
+	call LIB_CF_trace ('Size bytes  : $(LIB_CF_describe_other_data_file.size_bytes)');
+	call LIB_CF_trace ('Field Count : $(LIB_CF_describe_other_data_file.number_of_fields)');
+	call LIB_CF_trace ('Field names : $(LIB_CF_describe_other_data_file.field_name_list)');
+	call LIB_CF_trace ('Row count   : $(LIB_CF_describe_other_data_file.number_of_rows)');
+
 END SUB ;
 
 //t1:
 //noconcatenate
-//load * inline 
+//load * inline
 //[
 //fieldname, tablename
 //1
@@ -3466,7 +3467,7 @@ END SUB ;
 //
 //t1:
 //noconcatenate
-//load * inline 
+//load * inline
 //[
 //field1
 //]
@@ -3474,7 +3475,7 @@ END SUB ;
 //
 //t2:
 //noconcatenate
-//load * inline 
+//load * inline
 //[
 //field1, field2
 //row
